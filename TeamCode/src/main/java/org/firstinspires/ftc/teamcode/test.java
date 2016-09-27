@@ -21,8 +21,12 @@ public class test extends LinearOpMode {
         left = hardwareMap.dcMotor.get("left");
         right = hardwareMap.dcMotor.get("right");
 
-        left.setPower(75);
-        right.setPower(75);
+        waitForStart();
+        left.setPower(0.75);
+        right.setPower(0.75);
+        Thread.sleep(1000);
+        left.setPower(0.75);
+        right.setPower(0.50);
 
         Thread.sleep(1000);
     }
