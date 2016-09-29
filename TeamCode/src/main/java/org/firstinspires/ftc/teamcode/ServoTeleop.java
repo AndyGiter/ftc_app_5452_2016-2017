@@ -16,7 +16,7 @@ public class ServoTeleop extends LinearOpMode { // Just to find the min max posi
 
     public void runOpMode() throws InterruptedException
     {
-        test = hardwareMap.servo.get("left");
+        test = hardwareMap.servo.get("right");
 
         waitForStart();
 
@@ -31,7 +31,8 @@ public class ServoTeleop extends LinearOpMode { // Just to find the min max posi
                 pos -= 0.01;
             }
 
-            telemetry.addData("Pos", ""+pos); // hopfully I didnt forget how this works
+            telemetry.addData("Servo Position", "%5.2f", pos);
+            telemetry.update();
             test.setPosition(pos);
             Thread.sleep(100);
         }
