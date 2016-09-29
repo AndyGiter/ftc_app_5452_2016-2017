@@ -24,8 +24,9 @@ public class BasicTeleop extends LinearOpMode {
     Servo leftBp;
 
     final float DEADZONE = 0.200f;
-    final double BPMIN = 0;
-    final double BPMAX = 1; // divide by 2 for mid
+    final double BPMIN = 0.1;
+    final double BPMAX = 0.76; // divide by 2 for mid
+    double pos = 0.5;
 
     public void runOpMode() throws InterruptedException {
 
@@ -37,32 +38,36 @@ public class BasicTeleop extends LinearOpMode {
         left1.setDirection(DcMotor.Direction.REVERSE); // make sure this works
         left2.setDirection(DcMotor.Direction.REVERSE);
 
-        rightBp = hardwareMap.servo.get("rightBp");
-        leftBp  = hardwareMap.servo.get("leftBp");
+        rightBp = hardwareMap.servo.get("right");
+        leftBp  = hardwareMap.servo.get("left");
 
         gamepad1.setJoystickDeadzone(DEADZONE);
         gamepad2.setJoystickDeadzone(DEADZONE);
 
-        rightBp.setPosition(BPMAX/2); // init to default positions
+        rightBp.setPosition(BPMAX / 2); // init to default positions
         leftBp.setPosition(BPMAX/2);
+
+        rightBp.scaleRange(BPMIN, BPMAX);
+        leftBp.scaleRange(BPMIN, BPMAX);
 
         waitForStart();
 
         while(opModeIsActive())
         {
-            moveRight(gamepad1.right_stick_y, -1);
-            moveLeft(gamepad1.left_stick_y, -1);
 
-            if(gamepad1.b)
+            if(gamepad1.b && pos<1)
             {
-                rightBp.setPosition(BPMAX);
-                leftBp.setPosition(BPMAX);
+                pos += 0.05;
             }
-            else if(gamepad1.x)
+            else if(gamepad1.x && pos>0)
             {
-                rightBp.setPosition(BPMIN);
-                leftBp.setPosition(BPMIN);
+                pos -= 0.05;
             }
+
+            moveRight(-1*gamepad1.right_stick_y, -1); // make sure that
+            moveLeft(-1*gamepad1.left_stick_y, -1);
+            leftBp.setPosition(pos);
+            rightBp.setPosition(pos);
 
         }
     } // End of running code
