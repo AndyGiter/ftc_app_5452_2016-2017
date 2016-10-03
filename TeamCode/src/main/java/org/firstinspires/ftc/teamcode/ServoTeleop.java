@@ -18,6 +18,9 @@ public class ServoTeleop extends LinearOpMode { // Just to find the min max posi
     {
         test = hardwareMap.servo.get("right");
 
+        telemetry.addData("Revision", "4");
+        telemetry.update();
+
         waitForStart();
 
         while(opModeIsActive())
