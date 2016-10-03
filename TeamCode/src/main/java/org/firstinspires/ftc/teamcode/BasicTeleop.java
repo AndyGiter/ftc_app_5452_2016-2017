@@ -24,8 +24,6 @@ public class BasicTeleop extends LinearOpMode {
     Servo leftBp;
 
     final float DEADZONE = 0.200f;
-    final double BPMIN = 0.1;
-    final double BPMAX = 0.76; // divide by 2 for mid
     double pos = 0.5;
 
     public void runOpMode() throws InterruptedException {
@@ -38,17 +36,26 @@ public class BasicTeleop extends LinearOpMode {
         left1.setDirection(DcMotor.Direction.REVERSE); // make sure this works
         left2.setDirection(DcMotor.Direction.REVERSE);
 
+        left1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // see if this works the other way
+        right1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        left2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        right2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         rightBp = hardwareMap.servo.get("right");
         leftBp  = hardwareMap.servo.get("left");
 
         gamepad1.setJoystickDeadzone(DEADZONE);
         gamepad2.setJoystickDeadzone(DEADZONE);
 
-        rightBp.setPosition(BPMAX / 2); // init to default positions
-        leftBp.setPosition(BPMAX/2);
+        rightBp.scaleRange(0.1, 0.76);
+        leftBp.scaleRange(0.1, 0.76); // need to test if this is right
 
-        rightBp.scaleRange(BPMIN, BPMAX);
-        leftBp.scaleRange(BPMIN, BPMAX);
+        rightBp.setPosition(0.5); // init to default positions
+        leftBp.setPosition(0.5);
+
+
+        telemetry.addData("Revision", "2");
+        telemetry.update();
 
         waitForStart();
 
@@ -64,10 +71,10 @@ public class BasicTeleop extends LinearOpMode {
                 pos -= 0.05;
             }
 
-            moveRight(-1*gamepad1.right_stick_y, -1); // make sure that
-            moveLeft(-1*gamepad1.left_stick_y, -1);
-            leftBp.setPosition(pos);
-            rightBp.setPosition(pos);
+            moveRight(-1 * gamepad1.right_stick_y, -1); // make sure that
+            moveLeft(-1 * gamepad1.left_stick_y, -1);
+            //leftBp.setPosition(pos);
+            //rightBp.setPosition(pos);
 
         }
     } // End of running code
