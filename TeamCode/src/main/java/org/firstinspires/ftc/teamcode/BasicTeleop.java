@@ -48,33 +48,38 @@ public class BasicTeleop extends LinearOpMode {
         gamepad2.setJoystickDeadzone(DEADZONE);
 
         rightBp.scaleRange(0.1, 0.76);
-        leftBp.scaleRange(0.1, 0.76); // need to test if this is right
+        leftBp.scaleRange(0, 0.57);
 
         rightBp.setPosition(0.5); // init to default positions
         leftBp.setPosition(0.5);
 
 
-        telemetry.addData("Revision", "2");
+        telemetry.addData("Revision", "3, now with servos");
         telemetry.update();
 
         waitForStart();
 
         while(opModeIsActive())
         {
-
-            if(gamepad1.b && pos<1)
+            if(gamepad1.x) // left
             {
-                pos += 0.05;
+                leftBp.setPosition(1);
+                rightBp.setPosition(1);
             }
-            else if(gamepad1.x && pos>0)
+            else if(gamepad1.y) // middle
             {
-                pos -= 0.05;
+                leftBp.setPosition(0.5);
+                rightBp.setPosition(0.5);
+            }
+            else if(gamepad1.b) // right
+            {
+                leftBp.setPosition(0);
+                rightBp.setPosition(0);
             }
 
-            moveRight(-1 * gamepad1.right_stick_y, -1); // make sure that
+
+            moveRight(-1 * gamepad1.right_stick_y, -1);
             moveLeft(-1 * gamepad1.left_stick_y, -1);
-            //leftBp.setPosition(pos);
-            //rightBp.setPosition(pos);
 
         }
     } // End of running code
