@@ -98,11 +98,7 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
      */
     VuforiaLocalizer vuforia;
 
-<<<<<<< HEAD
-    @Override public void runOpMode() throws InterruptedException {
-=======
     @Override public void runOpMode() {
->>>>>>> refs/remotes/ftctechnh/master
         /**
          * Start up Vuforia, telling it the id of the view that we wish to use as the parent for
          * the camera monitor feedback; if no camera monitor feedback is desired, use the parameterless
@@ -127,11 +123,7 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
          * {@link Parameters} instance with which you initialize Vuforia.
          */
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId);
-<<<<<<< HEAD
-        parameters.vuforiaLicenseKey = "AfL/pL7/////AAAAGWohaRubFEeUrpWNOu+h89Mob6+q76pGrWAmLJZs9f1SSdyWAYBS+ysU7H4ap8+GzJbAPlB84MjGFMJ0DcNF/VRMktkqOKuFDTVQJP2YeP+M2IauNLZzg/8q9pdlJhnbkLyFp8vpnBGKDfNj3cOR8QKRmBO5cTcP6QQ5at4RaNZWLCKEMGq9UFsOEnHdU0nbX8Vklc2+swFy48PldByD9UG5noepiHIEUOE4rQz++v0llbON/7ecVfZNq4lfgl6V4dMWkMYAzgjXAIOCriNJcBIhcDLbS/9nKZiKFYlY+uypFY3SXt1v9aus7UW05uuuFKgTz4LUoB/PxNUObVckDjT4oXg3q85yGCd8fOVp3oY6";
-=======
         parameters.vuforiaLicenseKey = "ATsODcD/////AAAAAVw2lR...d45oGpdljdOh5LuFB9nDNfckoxb8COxKSFX";
->>>>>>> refs/remotes/ftctechnh/master
         parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
         this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
 
@@ -327,10 +319,6 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
                 telemetry.addData("Pos", "Unknown");
             }
             telemetry.update();
-<<<<<<< HEAD
-            idle();
-=======
->>>>>>> refs/remotes/ftctechnh/master
         }
     }
 
