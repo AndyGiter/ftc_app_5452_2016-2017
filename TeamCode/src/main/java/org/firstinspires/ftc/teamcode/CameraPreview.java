@@ -18,15 +18,15 @@ public class CameraPreview implements SurfaceHolder.Callback {
     static SurfaceHolder surfaceHolder;
     static boolean viewing = false;
 
-    static int redAvg = 100;
-    static int blueAvg = 100;
-    static int greenAvg = 100;
+    static int redAvg = -1;
+    static int blueAvg = -1;
+    static int greenAvg = -1;
 
-    static int redPixelCount = 0;
-    static int bluePixelCount = 0;
+    static int redPixelCount = -1;
+    static int bluePixelCount = -1;
 
-    static float firstHUE = 128;
-
+    static float firstHUE = -1;
+    static boolean actuallyRun = false;
 
     CameraPreview(SurfaceView surfaceView) {
         this.surfaceView = surfaceView;
@@ -65,7 +65,7 @@ public class CameraPreview implements SurfaceHolder.Callback {
 
     public static void capture() {
         if(camera != null && viewing) {
-            camera.takePicture(null, null, callback);
+            camera.takePicture(null, null, callback, null);
         }
     }
 
@@ -78,6 +78,8 @@ public class CameraPreview implements SurfaceHolder.Callback {
 
             redPixelCount = 0;
             bluePixelCount = 0;
+
+            firstHUE = 0;
 
             final int startY = 0;
             final int endY   = 80;
@@ -109,15 +111,18 @@ public class CameraPreview implements SurfaceHolder.Callback {
                     blueAvg += Color.blue(pixel);
                     greenAvg += Color.green(pixel);
 
-                    if(x==80 && y==80)
+                    if(x==0 && y==0)
                     {
-                        firstHUE = hsv[0];
+                        //firstHUE = hsv[0];
+                        firstHUE = 420;
                     }
                 }
             } // end of for loop
             redAvg /= 80 * 80;
             blueAvg /= 80 * 80;
             greenAvg /= 80 * 80;
+
+            actuallyRun = true;
         }
     };
 

@@ -29,14 +29,19 @@ public class VisionTesting extends LinearOpMode {
         waitForStart();
 
         c.capture();
+        Thread.sleep(500);
+        telemetry.addData("Revision", "4");
         telemetry.addData("Color Detected", c.colorDetected()==Color.RED?"Red":"Blue");
         telemetry.addData("Color Detected HSV", c.colorDetectedHSV() == Color.RED ? "Red" : "Blue");
         telemetry.addData("Hue", c.firstHUE);
+        telemetry.addData("Actually Run", c.actuallyRun);
 
+        /*
         telemetry.addData("RED count", c.redPixelCount);
         telemetry.addData("BLUE count", c.bluePixelCount);
         telemetry.addData("RED count", c.redAvg);
         telemetry.addData("BLUE count", c.blueAvg);
+        */
 
         telemetry.update();
         c.stop();
