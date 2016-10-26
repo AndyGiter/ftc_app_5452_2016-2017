@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Camera;
 import android.view.SurfaceView;
+import android.graphics.Color;
 
 /**
  * Created by mlowery2 on 10/13/2016.
@@ -28,9 +29,17 @@ public class VisionTesting extends LinearOpMode {
         waitForStart();
 
         c.capture();
-        telemetry.addData("Color Detected", "RGB: " + c.colorDetected());
-        telemetry.addData("Color Detected", "HSV: " + c.colorDetectedHSV());
+        telemetry.addData("Color Detected", c.colorDetected()==Color.RED?"Red":"Blue");
+        telemetry.addData("Color Detected HSV", c.colorDetectedHSV() == Color.RED ? "Red" : "Blue");
+        telemetry.addData("Hue", c.firstHUE);
+
+        telemetry.addData("RED count", c.redPixelCount);
+        telemetry.addData("BLUE count", c.bluePixelCount);
+        telemetry.addData("RED count", c.redAvg);
+        telemetry.addData("BLUE count", c.blueAvg);
+
         telemetry.update();
+        c.stop();
         while(opModeIsActive()){Thread.sleep(50);}
     }
 }

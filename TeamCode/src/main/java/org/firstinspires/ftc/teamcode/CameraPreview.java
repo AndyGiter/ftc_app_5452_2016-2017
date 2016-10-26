@@ -18,12 +18,14 @@ public class CameraPreview implements SurfaceHolder.Callback {
     static SurfaceHolder surfaceHolder;
     static boolean viewing = false;
 
-    static int redAvg = 0;
-    static int blueAvg = 0;
-    static int greenAvg = 0;
+    static int redAvg = 100;
+    static int blueAvg = 100;
+    static int greenAvg = 100;
 
     static int redPixelCount = 0;
     static int bluePixelCount = 0;
+
+    static float firstHUE = 128;
 
 
     CameraPreview(SurfaceView surfaceView) {
@@ -77,22 +79,28 @@ public class CameraPreview implements SurfaceHolder.Callback {
             redPixelCount = 0;
             bluePixelCount = 0;
 
+            final int startY = 0;
+            final int endY   = 80;
+            final int startX = 0;
+            final int endX   = 80;
+
+
             Bitmap bitmapPicture = BitmapFactory.decodeByteArray(data, 0, data.length);
             Bitmap bitmap = Bitmap.createBitmap(bitmapPicture);
-            for(int y = 0; y < 80; y++) {
-                for (int x = 0; x < 80; x++) {
+            for(int y = startY; y <= endY; y++) {
+                for (int x = startX; x <= endX; x++) {
                     int pixel = bitmap.getPixel(x, y);
                     int red = Color.red(pixel);
                     int blue = Color.blue(pixel);
                     int green = Color.green(pixel);
 
                     float[] hsv = new float[3];
-                    Color.RGBToHSV(red, green, blue, hsv);
+                    Color.RGBToHSV(red, green, blue, hsv); //HSV. hsv[0] is Hue [0 .. 360) hsv[1] is Saturation [0...1] hsv[2] is Value [0...1]
 
-                    if(hsv[1] < 50 && hsv[0] > 0 && hsv[0] < 60) {
+                    if((hsv[0] > 0 && hsv[0] < 60) || hsv[0] > 300) {
                         //pixel is red
                         redPixelCount++;
-                    } else if (hsv[1] < 50 && hsv[0] > 240 && hsv[0] < 300) {
+                    } else if (hsv[0] > 240 && hsv[0] < 300) {
                         //pixel is blue
                         bluePixelCount++;
                     }
@@ -100,8 +108,13 @@ public class CameraPreview implements SurfaceHolder.Callback {
                     redAvg += Color.red(pixel);
                     blueAvg += Color.blue(pixel);
                     greenAvg += Color.green(pixel);
+
+                    if(x==80 && y==80)
+                    {
+                        firstHUE = hsv[0];
+                    }
                 }
-            }
+            } // end of for loop
             redAvg /= 80 * 80;
             blueAvg /= 80 * 80;
             greenAvg /= 80 * 80;
