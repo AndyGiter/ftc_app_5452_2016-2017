@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
@@ -50,7 +49,7 @@ public class BasicTeleop extends LinearOpMode {
         rightBp.scaleRange(0.1, 0.76);
         leftBp.scaleRange(0, 0.57);
 
-        rightBp.setPosition(0.5); // init to default positions
+        rightBp.setPosition(0.5);
         leftBp.setPosition(0.5);
 
 
