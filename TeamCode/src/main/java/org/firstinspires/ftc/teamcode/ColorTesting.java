@@ -39,7 +39,7 @@ public class ColorTesting extends LinearOpMode {
     public void runOpMode() throws InterruptedException
     {
         //red    = hardwareMap.colorSensor.get("red");
-        blue   = hardwareMap.colorSensor.get("blue");
+        blue   = hardwareMap.colorSensor.get("blue"); // TODO: Update to include the I2C address stuff so it will work
         bottom = hardwareMap.colorSensor.get("bottom");
 
         //red   .enableLed(LEDon);
