@@ -16,6 +16,7 @@ public class servoTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException
     {
 
+        cannon = hardwareMap.servo.get("cannon");
         cannon.setPosition(1);
 
         telemetry.addData("Current Position: ", cannon.getPosition());
