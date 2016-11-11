@@ -10,52 +10,13 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 
 
-@TeleOp(name="Basic Teleop", group="Testing")
+@TeleOp(name="Basic Teleop", group="Teleop")
 
-public class BasicTeleop extends LinearOpMode {
-
-    DcMotor left1;
-    DcMotor left2;
-    DcMotor right1;
-    DcMotor right2;
-
-    Servo rightBp;
-    Servo leftBp;
-
-    final float DEADZONE = 0.200f;
-    double pos = 0.5;
+public class BasicTeleop extends LinearBase {
 
     public void runOpMode() throws InterruptedException {
 
-        left1  = hardwareMap.dcMotor.get("left1");
-        left2  = hardwareMap.dcMotor.get("left2");
-        right1 = hardwareMap.dcMotor.get("right1");
-        right2 = hardwareMap.dcMotor.get("right2");
-
-        left1.setDirection(DcMotor.Direction.REVERSE); // make sure this works
-        left2.setDirection(DcMotor.Direction.REVERSE);
-
-        left1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // see if this works the other way
-        right1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        left2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        right2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        rightBp = hardwareMap.servo.get("right");
-        leftBp  = hardwareMap.servo.get("left");
-
-        gamepad1.setJoystickDeadzone(DEADZONE);
-        gamepad2.setJoystickDeadzone(DEADZONE);
-
-        rightBp.scaleRange(0.1, 0.76);
-        leftBp.scaleRange(0, 0.57);
-
-        rightBp.setPosition(0.5);
-        leftBp.setPosition(0.5);
-
-
-        telemetry.addData("Revision", "3, now with servos");
-        telemetry.update();
-
+        initalize();
         waitForStart();
 
         while(opModeIsActive())
@@ -67,13 +28,17 @@ public class BasicTeleop extends LinearOpMode {
             }
             else if(gamepad1.y) // middle
             {
-                leftBp.setPosition(0.5);
-                rightBp.setPosition(0.5);
+                leftBp.setPosition(RBP_INIT);
+                rightBp.setPosition(LBP_INIT);
             }
             else if(gamepad1.b) // right
             {
                 leftBp.setPosition(0);
                 rightBp.setPosition(0);
+            }
+            else if(gamepad1.a)
+            {
+                cannon.setPosition(0);
             }
 
 
@@ -99,17 +64,6 @@ public class BasicTeleop extends LinearOpMode {
         {
             right1.setPower(speed);
             right2.setPower(speed);
-        }
-    }
-
-    public void moveForward(float speed, int dist) // not for use in this code
-    {
-        if(dist<0)
-        {
-            right1.setPower(speed);
-            right2.setPower(speed);
-            left1.setPower(speed);
-            left2.setPower(speed);
         }
     }
 }
