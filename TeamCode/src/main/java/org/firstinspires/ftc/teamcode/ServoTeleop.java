@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name="Servo Teleop", group="Testing")
 public class ServoTeleop extends LinearOpMode { // Just to find the min max positions of any servo
     Servo test;
-    double pos = 0.5;
+    double pos = 0;
     final double changeBy = 0.01;
     final long waitTime = 100;
 
