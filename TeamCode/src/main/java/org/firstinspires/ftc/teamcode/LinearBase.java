@@ -15,6 +15,10 @@ public abstract class LinearBase extends LinearOpMode{
     Servo leftBp;
     Servo cannon;
 
+    final double RBP_INIT = 0.5;
+    final double LBP_INIT = 0.5;
+    final double C_INIT   = 0.18;
+
     DcMotor left1;
     DcMotor left2;
     DcMotor right1;
@@ -33,6 +37,8 @@ public abstract class LinearBase extends LinearOpMode{
     float hsvValuesBottom[] = {0F, 0F, 0F};
 
     int side = Color.GREEN; // Default side
+
+    enum Direction {LEFT, RIGHT};
 
     DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
@@ -64,8 +70,9 @@ public abstract class LinearBase extends LinearOpMode{
         rightBp.scaleRange(0.1, 0.76);
         leftBp.scaleRange(0, 0.57);
 
-        rightBp.setPosition(0.5);
-        leftBp.setPosition(0.5);
+        rightBp.setPosition(RBP_INIT);
+        leftBp.setPosition(LBP_INIT);
+        cannon.setPosition(C_INIT);
 
         //Color Sensor Setup
         red = hardwareMap.colorSensor.get("red");
@@ -123,7 +130,7 @@ public abstract class LinearBase extends LinearOpMode{
             return 0; // Technically this is color.TRANSPARENT but that's never going to be usefull and I need a way to return an error
     }
 
-    public void move(double speed, double distance) // just as a note, distance must always be positive
+    public void move(double speed, double distance) throws InterruptedException
     {
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
         {
@@ -135,7 +142,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         //This if tests if the speed is negative and sets the distance to be negative.
         //I have no idea if this is needed when moving backwards
-        if(Math.abs(speed) == -1*speed) // if it is negative.
+        if(Math.abs(speed) == -1*speed && Math.abs(distance) == distance) // if it is negative.
         {distance *= -1;}
 
         right1.setTargetPosition((int) (right1.getCurrentPosition() + distance));
@@ -152,8 +159,77 @@ public abstract class LinearBase extends LinearOpMode{
                                   right2.isBusy() &&
                                   left1.isBusy()  &&
                                   left2.isBusy()){
+            Thread.sleep(50);
 
         }
+
+        right1.setPower(0);
+        right2.setPower(0);
+        left1.setPower(0);
+        left2.setPower(0);
+
+        Thread.sleep(300);
+
+        if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION) // last thing to do
+        {
+            right1.setMode(defualtRunMode);
+            right2.setMode(defualtRunMode);
+            left2.setMode(defualtRunMode);
+            left1.setMode(defualtRunMode);
+        }
+    }
+
+    public void turn(double speed, double distance, Direction d) throws InterruptedException
+    {
+        if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
+        {
+            right1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            right2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            left2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            left1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+
+        if(d == Direction.RIGHT) // if we want to turn right
+        {
+            right1.setTargetPosition((int) (right1.getCurrentPosition() + -1*distance));
+            right2.setTargetPosition((int) (right2.getCurrentPosition() + -1*distance));
+            left1.setTargetPosition((int) (left1.getCurrentPosition() + distance));
+            left2.setTargetPosition((int) (left2.getCurrentPosition() + distance));
+
+            right1.setPower(-1*speed);
+            right2.setPower(-1*speed);
+            left1.setPower(speed);
+            left2.setPower(speed);
+        }
+
+        else
+        {
+            right1.setTargetPosition((int) (right1.getCurrentPosition() + distance));
+            right2.setTargetPosition((int) (right2.getCurrentPosition() + distance));
+            left1.setTargetPosition((int) (left1.getCurrentPosition() + -1*distance));
+            left2.setTargetPosition((int) (left2.getCurrentPosition() + -1*distance));
+
+            right1.setPower(speed);
+            right2.setPower(speed);
+            left1.setPower(-1*speed);
+            left2.setPower(-1*speed);
+
+        }
+
+        while(opModeIsActive() && right1.isBusy() &&
+                                  right2.isBusy() &&
+                                  left1.isBusy()  &&
+                                  left2.isBusy()){
+            Thread.sleep(50);
+
+        }
+
+        right1.setPower(0);
+        right2.setPower(0);
+        left1.setPower(0);
+        left2.setPower(0);
+
+        Thread.sleep(300);
 
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION) // last thing to do
         {
