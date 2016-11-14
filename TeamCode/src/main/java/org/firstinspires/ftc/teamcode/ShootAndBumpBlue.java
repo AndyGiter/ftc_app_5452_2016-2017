@@ -15,12 +15,12 @@ public class ShootAndBumpBlue extends LinearBase {
     {
         initalize();
         waitForStart();
-        
-        move(0.75, 1440 * 0.50);
+
+        move(0.75, 1440 * 0.2);
 
         shoot();
 
-        move(0.75, 1440 * 0.70);
+        move(0.75, 1440 * 1.0);
 
         turn(0.75, 1440 * (2.0 / 3.0), Direction.LEFT);
 
