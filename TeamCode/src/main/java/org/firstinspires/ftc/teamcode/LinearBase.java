@@ -1,11 +1,21 @@
 package org.firstinspires.ftc.teamcode;
 
+// Basic Needed stuff (some needed in the program thiat this will implement.
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
+// Sensors
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+
+ // Moving parts
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
+
+ // Misc.
+import com.qualcomm.robotcore.hardware.I2cAddr; // TODO: Make sure that all I2c addresses are set correctly on all sensors and record what they are in this program.
 import android.graphics.Color;
 /**
  * Created by mlowery2 on 11/8/2016.
@@ -26,17 +36,26 @@ public abstract class LinearBase extends LinearOpMode{
 
     ColorSensor red;    // The red side color sensor
     ColorSensor blue;   // The blue side color sensor
-    ColorSensor bottom; // The color sensor on the bottom (for detecting lines.)
+    ColorSensor bottomLeft; // The color sensor on the bottom (for detecting lines.)
+    ColorSensor bottomRight; // The color sensor on the bottom (for detecting lines.)
 
     I2cAddr i2cAddrRed    = I2cAddr.create8bit(0x3c); // If you replace a color sensor make sure to set the I2C address to the right one
     I2cAddr i2cAddrBlue   = I2cAddr.create8bit(0x4c); // Also, port 0 for the I2C sensors doesnt work
-    I2cAddr i2cAddrBottom = I2cAddr.create8bit(0x5c);
+    I2cAddr i2cAddrBottomLeft = I2cAddr.create8bit(0x5c);
+    I2cAddr i2cAddrBottomRight = I2cAddr.create8bit(0x6c);
 
     float hsvValuesRed[]    = {0F, 0F, 0F};
     float hsvValuesBlue[]   = {0F, 0F, 0F};
-    float hsvValuesBottom[] = {0F, 0F, 0F};
+    float hsvValuesBottomLeft[] = {0F, 0F, 0F};
+    float hsvValuesBottomRight[] = {0F, 0F, 0F};
 
-    int side = Color.GREEN; // Default side
+    ModernRoboticsI2cGyro gyro; // Default I2C address 0x20
+
+    ModernRoboticsI2cRangeSensor rangeLeft;
+    ModernRoboticsI2cRangeSensor rangeRight;
+
+    I2cAddr i2cAddrRangeLeft = I2cAddr.create8bit(0x28); // Default: 0x28
+    I2cAddr i2cAddrRangeRight = I2cAddr.create8bit(0x29); // TODO: Make sure to set the I2C addresses of the range sensors
 
     enum Direction {LEFT, RIGHT};
 
@@ -44,10 +63,20 @@ public abstract class LinearBase extends LinearOpMode{
 
     final float DEADZONE = 0.200f;
 
-    boolean verbose = false; // TODO: Add to init function or dont idk
+    // TODO: Add to init function or don't idk
+    boolean verbose = false;
+    /* Template for using telemetry in a function
 
-    public void initalize()
+    if(verbose){telemetry.addData("",""); telemetry.update();}
+
+    */
+
+    public void initalize() throws InterruptedException
     {
+        //Gyro (this comes first so we can do other things, like initalizing other things, while this calibrates.)
+        gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("gyro");
+        gyro.calibrate();
+
         // Motor Setup
         left1  = hardwareMap.dcMotor.get("left1");
         left2  = hardwareMap.dcMotor.get("left2");
@@ -77,34 +106,52 @@ public abstract class LinearBase extends LinearOpMode{
         //Color Sensor Setup
         red = hardwareMap.colorSensor.get("red");
         blue = hardwareMap.colorSensor.get("blue");
-        bottom = hardwareMap.colorSensor.get("bottom");
+        bottomLeft = hardwareMap.colorSensor.get("bottomLeft");
+        bottomRight = hardwareMap.colorSensor.get("bottomRight");
 
         red.setI2cAddress(i2cAddrRed);
         blue.setI2cAddress(i2cAddrBlue);
-        bottom.setI2cAddress(i2cAddrBottom);
+        bottomLeft.setI2cAddress(i2cAddrBottomLeft);
+        bottomRight.setI2cAddress(i2cAddrBottomRight);
 
         red.enableLed(true);
         blue.enableLed(true);
-        bottom.enableLed(true);
+        bottomLeft.enableLed(true);
+        bottomRight.enableLed(true);
 
+        // Range sensor setup
+        rangeLeft = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rangeLeft");
+        rangeRight = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rangeRight");
+
+        rangeLeft.setI2cAddress(i2cAddrRangeLeft);
+        rangeRight.setI2cAddress(i2cAddrRangeRight);
+
+        // Setting the deadzone for the gamepads
         gamepad1.setJoystickDeadzone(DEADZONE);
         gamepad2.setJoystickDeadzone(DEADZONE);
 
+        while (!isStopRequested() && gyro.isCalibrating())  { // Make sure that the gyro is calibrated
+            Thread.sleep(50);
+        }
+
+        if(verbose){telemetry.addData("Done: ","Initalizing"); telemetry.update();}
+
     }
-    public void initalize(int newSide)
-    {
-        side = newSide;
-        initalize();
-    }
-    public void initalize(DcMotor.RunMode newDefualtRunMode)
+    public void initalize(DcMotor.RunMode newDefualtRunMode) throws InterruptedException
     {
         defualtRunMode = newDefualtRunMode;
         initalize();
     }
-    public void initalize(int newSide, DcMotor.RunMode newDefualtRunMode)
+
+    public void initalize(boolean newVerbose) throws InterruptedException
     {
-        side = newSide;
+        verbose = newVerbose;
+        initalize();
+    }
+    public void initalize(DcMotor.RunMode newDefualtRunMode, boolean newVerbose) throws InterruptedException
+    {
         defualtRunMode = newDefualtRunMode;
+        verbose = newVerbose;
         initalize();
     }
 
@@ -112,7 +159,8 @@ public abstract class LinearBase extends LinearOpMode{
     {
         Color.RGBToHSV(red.red() * 8,    red.green() * 8,    red.blue() * 8,    hsvValuesRed);
         Color.RGBToHSV(blue.red() * 8,   blue.green() * 8,   blue.blue() * 8,   hsvValuesBlue);
-        Color.RGBToHSV(bottom.red() * 8, bottom.green() * 8, bottom.blue() * 8, hsvValuesBottom);
+        Color.RGBToHSV(bottomLeft.red() * 8, bottomLeft.green() * 8, bottomLeft.blue() * 8, hsvValuesBottomLeft);
+        Color.RGBToHSV(bottomRight.red() * 8, bottomRight.green() * 8, bottomRight.blue() * 8, hsvValuesBottomRight);
     }
 
     public int colorSeen(ColorSensor sensor) // RGB only
@@ -238,5 +286,39 @@ public abstract class LinearBase extends LinearOpMode{
             left2.setMode(defualtRunMode);
             left1.setMode(defualtRunMode);
         }
+    }
+
+    // If there is no direction given, use gyro
+    // Negative degrees turns left
+    // Positive is right
+    public void turn(double speed, int deg) throws InterruptedException
+    {
+        int targetHeading = gyro.getIntegratedZValue() + deg;
+
+        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
+        {
+            right1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            right2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            left2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            left1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+
+        if(Math.abs(deg) == deg) // if deg is positive (we are doing a right turn)
+
+        right1.setPower(0);
+        right2.setPower(0);
+        left1.setPower(0);
+        left2.setPower(0);
+
+        Thread.sleep(300);
+
+        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) // last thing to do
+        {
+            right1.setMode(defualtRunMode);
+            right2.setMode(defualtRunMode);
+            left2.setMode(defualtRunMode);
+            left1.setMode(defualtRunMode);
+        }
+
     }
 }
