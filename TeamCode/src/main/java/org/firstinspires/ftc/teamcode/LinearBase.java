@@ -78,7 +78,6 @@ public abstract class LinearBase extends LinearOpMode{
 
     final float DEADZONE = 0.200f;
 
-    // TODO: Add to init function or don't idk
     boolean verbose = false;
     /* Template for using telemetry in a function
 
