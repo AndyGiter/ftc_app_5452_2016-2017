@@ -19,6 +19,21 @@ import com.qualcomm.robotcore.hardware.I2cAddr; // TODO: Make sure that all I2c 
 import android.graphics.Color;
 /**
  * Created by mlowery2 on 11/8/2016.
+ *
+ * I2C address checklist:
+ *
+ * Color Sensors
+ * red:         0x3c // Default
+ * blue:        0x4c
+ * bottomLeft:  0x5c
+ * bottomRight: 0x6c
+ *
+ * Range Sensors
+ * left:  0x28 // Default
+ * right: 0x26
+ *
+ * Gyro Sensor
+ * gyro: 0x20 // Default
  */
 public abstract class LinearBase extends LinearOpMode{
     Servo rightBp;
@@ -54,8 +69,8 @@ public abstract class LinearBase extends LinearOpMode{
     ModernRoboticsI2cRangeSensor rangeLeft;
     ModernRoboticsI2cRangeSensor rangeRight;
 
-    I2cAddr i2cAddrRangeLeft = I2cAddr.create8bit(0x28); // Default: 0x28
-    I2cAddr i2cAddrRangeRight = I2cAddr.create8bit(0x29); // TODO: Make sure to set the I2C addresses of the range sensors
+    I2cAddr i2cAddrRangeLeft = I2cAddr.create8bit(0x28);
+    I2cAddr i2cAddrRangeRight = I2cAddr.create8bit(0x26);
 
     enum Direction {LEFT, RIGHT};
 
@@ -73,6 +88,8 @@ public abstract class LinearBase extends LinearOpMode{
 
     public void initalize() throws InterruptedException
     {
+        double start = getRuntime();
+
         //Gyro (this comes first so we can do other things, like initalizing other things, while this calibrates.)
         gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("gyro");
         gyro.calibrate();
@@ -134,7 +151,7 @@ public abstract class LinearBase extends LinearOpMode{
             Thread.sleep(50);
         }
 
-        if(verbose){telemetry.addData("Done: ","Initalizing"); telemetry.update();}
+        if(verbose){telemetry.addData("Done: ","Initalizing, took " + (getRuntime()-start) + " seconds"); telemetry.update();}
 
     }
     public void initalize(DcMotor.RunMode newDefualtRunMode) throws InterruptedException
