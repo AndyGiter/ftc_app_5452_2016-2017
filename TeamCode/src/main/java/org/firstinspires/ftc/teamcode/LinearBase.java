@@ -66,6 +66,8 @@ public abstract class LinearBase extends LinearOpMode{
 
     ModernRoboticsI2cGyro gyro; // Default I2C address 0x20
 
+    private final double TURN_RANGE = 2; // The degree leeway that the robot can be within. Smaller numbers take longer but are more precise and larger are faster but less precise. 
+
     ModernRoboticsI2cRangeSensor rangeLeft;
     ModernRoboticsI2cRangeSensor rangeRight;
 
@@ -76,7 +78,7 @@ public abstract class LinearBase extends LinearOpMode{
 
     DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
-    final float DEADZONE = 0.200f;
+    private final float DEADZONE = 0.200f;
 
     boolean verbose = false;
     /* Template for using telemetry in a function
@@ -88,6 +90,7 @@ public abstract class LinearBase extends LinearOpMode{
     public void initalize() throws InterruptedException
     {
         double start = getRuntime();
+        if(verbose){telemetry.addData("Done: ","Starting init"); telemetry.update();}
 
         //Gyro (this comes first so we can do other things, like initalizing other things, while this calibrates.)
         gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("gyro");
@@ -146,6 +149,7 @@ public abstract class LinearBase extends LinearOpMode{
         gamepad1.setJoystickDeadzone(DEADZONE);
         gamepad2.setJoystickDeadzone(DEADZONE);
 
+        if(verbose){telemetry.addData("Done: ","Everything but gyro"); telemetry.update();}
         while (!isStopRequested() && gyro.isCalibrating())  { // Make sure that the gyro is calibrated
             Thread.sleep(50);
         }
@@ -275,8 +279,8 @@ public abstract class LinearBase extends LinearOpMode{
 
             right1.setPower(speed);
             right2.setPower(speed);
-            left1.setPower(-1*speed);
-            left2.setPower(-1*speed);
+            left1.setPower(-1 * speed);
+            left2.setPower(-1 * speed);
 
         }
 
@@ -305,28 +309,43 @@ public abstract class LinearBase extends LinearOpMode{
     }
 
     // If there is no direction given, use gyro
-    // Negative degrees turns left
-    // Positive is right
+    // Negative degrees turns right
+    // Positive is left
     public void turn(double speed, int deg) throws InterruptedException
     {
         int targetHeading = gyro.getIntegratedZValue() + deg;
 
-        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
-        {
+        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) {
             right1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             right2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             left2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             left1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
-        if(Math.abs(deg) == deg) // if deg is positive (we are doing a right turn)
+        // While the gyro is not within the range (TURN_RANGE)
+        while(!(gyro.getIntegratedZValue() <= targetHeading+(TURN_RANGE/2.0) && gyro.getIntegratedZValue() >= targetHeading-(TURN_RANGE/2.0)) && opModeIsActive() && !isStopRequested()) // make sure this works
+        {
+            if(gyro.getIntegratedZValue() > targetHeading) // Right turn
+            {
+                left1.setPower(speed);
+                left2.setPower(speed);
+                right1.setPower(-1*speed);
+                right2.setPower(-1 * speed);
+            }
+
+            else //then its a left turn
+            {
+                left1.setPower(-1*speed);
+                left2.setPower(-1*speed);
+                right1.setPower(speed);
+                right2.setPower(speed);
+            }
+        }
 
         right1.setPower(0);
         right2.setPower(0);
         left1.setPower(0);
         left2.setPower(0);
-
-        Thread.sleep(300);
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) // last thing to do
         {
@@ -335,6 +354,13 @@ public abstract class LinearBase extends LinearOpMode{
             left2.setMode(defualtRunMode);
             left1.setMode(defualtRunMode);
         }
+
+        Thread.sleep(300);
+
+    }
+
+    public void alignToLine()
+    {
 
     }
 }
