@@ -16,6 +16,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
  // Misc.
 import com.qualcomm.robotcore.hardware.I2cAddr; // TODO: Make sure that all I2c addresses are set correctly on all sensors and record what they are in this program.
+import com.qualcomm.robotcore.util.Range;
+
 import android.graphics.Color;
 /**
  * Created by mlowery2 on 11/8/2016.
@@ -54,10 +56,10 @@ public abstract class LinearBase extends LinearOpMode{
     ColorSensor bottomLeft; // The color sensor on the bottom (for detecting lines.)
     ColorSensor bottomRight; // The color sensor on the bottom (for detecting lines.)
 
-    I2cAddr i2cAddrRed    = I2cAddr.create8bit(0x3c); // If you replace a color sensor make sure to set the I2C address to the right one
-    I2cAddr i2cAddrBlue   = I2cAddr.create8bit(0x4c); // Also, port 0 for the I2C sensors doesnt work
-    I2cAddr i2cAddrBottomLeft = I2cAddr.create8bit(0x5c);
-    I2cAddr i2cAddrBottomRight = I2cAddr.create8bit(0x6c);
+    private I2cAddr i2cAddrRed    = I2cAddr.create8bit(0x3c); // If you replace a color sensor make sure to set the I2C address to the right one
+    private I2cAddr i2cAddrBlue   = I2cAddr.create8bit(0x4c); // Also, port 0 for the I2C sensors doesnt work
+    private I2cAddr i2cAddrBottomLeft = I2cAddr.create8bit(0x5c);
+    private I2cAddr i2cAddrBottomRight = I2cAddr.create8bit(0x6c);
 
     float hsvValuesRed[]    = {0F, 0F, 0F};
     float hsvValuesBlue[]   = {0F, 0F, 0F};
@@ -66,15 +68,14 @@ public abstract class LinearBase extends LinearOpMode{
 
     ModernRoboticsI2cGyro gyro; // Default I2C address 0x20
 
-    private final double TURN_RANGE = 2; // The degree leeway that the robot can be within. Smaller numbers take longer but are more precise and larger are faster but less precise. 
-
     ModernRoboticsI2cRangeSensor rangeLeft;
     ModernRoboticsI2cRangeSensor rangeRight;
 
-    I2cAddr i2cAddrRangeLeft = I2cAddr.create8bit(0x28);
-    I2cAddr i2cAddrRangeRight = I2cAddr.create8bit(0x26);
+    private I2cAddr i2cAddrRangeLeft = I2cAddr.create8bit(0x28);
+    private I2cAddr i2cAddrRangeRight = I2cAddr.create8bit(0x26);
 
     enum Direction {LEFT, RIGHT};
+    enum Side {RED, BLUE};
 
     DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
@@ -149,12 +150,12 @@ public abstract class LinearBase extends LinearOpMode{
         gamepad1.setJoystickDeadzone(DEADZONE);
         gamepad2.setJoystickDeadzone(DEADZONE);
 
-        if(verbose){telemetry.addData("Done: ","Everything but gyro"); telemetry.update();}
+        if(verbose){telemetry.addData("Done: ","Everything but gyro. Took " + (getRuntime()-start) + " seconds"); telemetry.update();}
         while (!isStopRequested() && gyro.isCalibrating())  { // Make sure that the gyro is calibrated
             Thread.sleep(50);
         }
 
-        if(verbose){telemetry.addData("Done: ","Initalizing, took " + (getRuntime()-start) + " seconds"); telemetry.update();}
+        if(verbose){telemetry.addData("Done: ","Initalizing. Took " + (getRuntime()-start) + " seconds"); telemetry.update();}
 
     }
     public void initalize(DcMotor.RunMode newDefualtRunMode) throws InterruptedException
@@ -198,7 +199,7 @@ public abstract class LinearBase extends LinearOpMode{
             return 0; // Technically this is color.TRANSPARENT but that's never going to be usefull and I need a way to return an error
     }
 
-    public void move(double speed, double distance) throws InterruptedException
+    public void move(double speed, double distance) throws InterruptedException // TODO: Integrate the gyro somehow
     {
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
         {
@@ -308,11 +309,14 @@ public abstract class LinearBase extends LinearOpMode{
         }
     }
 
-    // If there is no direction given, use gyro
-    // Negative degrees turns right
-    // Positive is left
-    public void turn(double speed, int deg) throws InterruptedException
+    /*
+     * If no direction is given. This is done mainly so I don't have to go back and update old code that doesnt use the gyro and inputs encoder values
+     * Negative deg value turns right
+     * Positive is left
+     */
+    public void turn(double maxSpeed, int deg) throws InterruptedException
     {
+        final int TURN_RANGE = 10;
         int targetHeading = gyro.getIntegratedZValue() + deg;
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) {
@@ -323,8 +327,30 @@ public abstract class LinearBase extends LinearOpMode{
         }
 
         // While the gyro is not within the range (TURN_RANGE)
-        while(!(gyro.getIntegratedZValue() <= targetHeading+(TURN_RANGE/2.0) && gyro.getIntegratedZValue() >= targetHeading-(TURN_RANGE/2.0)) && opModeIsActive() && !isStopRequested()) // make sure this works
+        while(!(gyro.getIntegratedZValue() <= targetHeading+(TURN_RANGE/2.0) && gyro.getIntegratedZValue() >= targetHeading-(TURN_RANGE/2.0)) && opModeIsActive()) // make sure this works
         {
+            /**
+             * These next two lines of code are kind of messy. The point is to decrease the speed over the turing distance.
+             * There is probably a better way to do this, but my math and programming skills limit me.
+             *
+             * Hopefully it works
+             */
+        /*
+            double percentDone = Math.abs((targetHeading - gyro.getIntegratedZValue())/deg);
+            double speed = maxSpeed*decrease(percentDone);
+
+            if(speed > maxSpeed || speed <0)
+            {
+                speed = maxSpeed;
+                telemetry.addData("Error: ", "You did it wrong dingus");
+                telemetry.update();
+            }
+
+            //speed = Range.clip(maxSpeed * (Math.abs(gyro.getIntegratedZValue() - targetHeading) / Math.abs(deg)), .01, maxSpeed); // coppied from brendan's code, thanks brendan
+
+            */
+            double speed = maxSpeed; // Uncoment if the thing above doesnt work
+
             if(gyro.getIntegratedZValue() > targetHeading) // Right turn
             {
                 left1.setPower(speed);
@@ -339,6 +365,15 @@ public abstract class LinearBase extends LinearOpMode{
                 left2.setPower(-1*speed);
                 right1.setPower(speed);
                 right2.setPower(speed);
+            }
+
+            if(verbose)
+            {
+                telemetry.addData("Gyro target: ", targetHeading+"");
+                telemetry.addData("Gyro headingL: ", gyro.getIntegratedZValue()+"");
+                //telemetry.addData("Gyro percent done: ", percentDone);
+                telemetry.addData("Robot speed: ", speed+"");
+                telemetry.update();
             }
         }
 
@@ -357,10 +392,33 @@ public abstract class LinearBase extends LinearOpMode{
 
         Thread.sleep(300);
 
+        if(verbose){telemetry.addData("Done: ", "Turning. " + deg + " deg. Heading: " + gyro.getIntegratedZValue()); telemetry.update();}
+
+    }
+
+    private double decrease(double x) // just put it into wolfram alpha and see the beauty
+    {return (Math.cos(3*x)+1)/2;}
+
+    // This should be used more in testing code
+    public void pressAndTest(Servo servo, ColorSensor sensor, double pressDistance)
+    {
+
+    }
+
+    // This sould be used more in final code
+    public void pressAndTest(Servo servo, ColorSensor sensor)
+    {
+        final double defaultPressDistance = 1; // Make sure to test that this is all the way extended
+        pressAndTest(servo, sensor, defaultPressDistance);
     }
 
     public void alignToLine()
     {
 
+    }
+
+    public void moveCloserToWall(double inputMinDistance)
+    {
+        final double minDistance = 5; // CM
     }
 }
