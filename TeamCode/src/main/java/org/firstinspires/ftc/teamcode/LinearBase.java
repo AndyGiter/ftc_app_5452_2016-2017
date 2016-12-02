@@ -26,9 +26,9 @@ import android.graphics.Color;
  *
  * Color Sensors
  * red:         0x3c // Default
- * blue:        0x4c
+ * blue:        0x1c
  * bottomLeft:  0x5c
- * bottomRight: 0x6c
+ * bottomRight: 0x7c
  *
  * Range Sensors
  * left:  0x28 // Default
@@ -51,15 +51,15 @@ public abstract class LinearBase extends LinearOpMode{
     DcMotor right1;
     DcMotor right2;
 
-    ColorSensor red;    // The red side color sensor
-    ColorSensor blue;   // The blue side color sensor
+    ColorSensor red;    // The red side color sensor (right side)
+    ColorSensor blue;   // The blue side color sensor (left side)
     ColorSensor bottomLeft; // The color sensor on the bottom (for detecting lines.)
     ColorSensor bottomRight; // The color sensor on the bottom (for detecting lines.)
 
     private I2cAddr i2cAddrRed    = I2cAddr.create8bit(0x3c); // If you replace a color sensor make sure to set the I2C address to the right one
-    private I2cAddr i2cAddrBlue   = I2cAddr.create8bit(0x4c); // Also, port 0 for the I2C sensors doesnt work
-    private I2cAddr i2cAddrBottomLeft = I2cAddr.create8bit(0x5c);
-    private I2cAddr i2cAddrBottomRight = I2cAddr.create8bit(0x6c);
+    private I2cAddr i2cAddrBlue   = I2cAddr.create8bit(0x3a); // Also, port 0 for the I2C sensors doesnt work
+    private I2cAddr i2cAddrBottomLeft = I2cAddr.create8bit(0x4c);
+    private I2cAddr i2cAddrBottomRight = I2cAddr.create8bit(0x4a);
 
     float hsvValuesRed[]    = {0F, 0F, 0F};
     float hsvValuesBlue[]   = {0F, 0F, 0F};
@@ -399,17 +399,60 @@ public abstract class LinearBase extends LinearOpMode{
     private double decrease(double x) // just put it into wolfram alpha and see the beauty
     {return (Math.cos(3*x)+1)/2;}
 
-    // This should be used more in testing code
-    public void pressAndTest(Servo servo, ColorSensor sensor, double pressDistance)
+    /*
+    * Blue Min: 0
+    * Blue Max: 0.75
+    *
+    * Red Press: 0.8
+    * Red Min: 0.0
+    * */
+    public void pressAndTest(Servo servo, ColorSensor sensor, double pressDistance, double servoMin, int colorWanted) throws InterruptedException
     {
+        if(colorWanted != Color.RED && colorWanted != Color.BLUE)
+        {
+            telemetry.addData("Error", "colorWanted is not a valid color");
+            telemetry.update();
+            return; // https://www.youtube.com/watch?v=LUpBSvN1a50
+        }
 
-    }
+        if(sensor.red() == 255 && sensor.blue() == 255 && sensor.green() == 255) // Just a failsafe
+        {
+            telemetry.addData("Error", "Sensors both returned: " + sensor.blue());
+            telemetry.update();
+            return; // https://www.youtube.com/watch?v=LUpBSvN1a50
+        }
 
-    // This sould be used more in final code
-    public void pressAndTest(Servo servo, ColorSensor sensor)
-    {
-        final double defaultPressDistance = 1; // Make sure to test that this is all the way extended
-        pressAndTest(servo, sensor, defaultPressDistance);
+        sensor.enableLed(false);
+
+        servo.setPosition(servoMin); // Move all the way back
+        Thread.sleep(75); // Giving time to move and stop
+
+        servo.setPosition(pressDistance); // go in for the press
+        Thread.sleep(75); // time to move
+
+        Thread.sleep(500);
+
+        if(verbose)
+        {
+            telemetry.addData("Red",  sensor.red());
+            telemetry.addData("Blue", sensor.blue());
+            telemetry.update();
+        }
+
+        double startTime = getRuntime();
+        while(((sensor.red() > sensor.blue() && colorWanted == Color.BLUE) || (sensor.blue() > sensor.red() && colorWanted == Color.RED)) && getRuntime()-startTime < 5) // while the color seen is not the one we wanted
+        {
+            servo.setPosition(servoMin); // Move all the way back
+            Thread.sleep(75); // Giving time to move and stop
+
+            servo.setPosition(pressDistance); // go in for the press
+            Thread.sleep(75); // time to move
+
+            Thread.sleep(500); // Time to change
+        }
+
+        servo.setPosition(servoMin);
+        sensor.enableLed(true);
     }
 
     public void alignToLine()
@@ -419,6 +462,6 @@ public abstract class LinearBase extends LinearOpMode{
 
     public void moveCloserToWall(double inputMinDistance)
     {
-        final double minDistance = 5; // CM
+        final double minDistance = 14; // CM, 15 from base of sensor
     }
 }
