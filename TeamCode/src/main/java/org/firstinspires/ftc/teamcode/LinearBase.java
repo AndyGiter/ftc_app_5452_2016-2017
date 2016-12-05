@@ -44,7 +44,7 @@ public abstract class LinearBase extends LinearOpMode{
 
     final double RBP_INIT = 0.5;
     final double LBP_INIT = 0.5;
-    final double C_INIT   = 0.18;
+    final double C_INIT   = 0.10; // was 0.18
 
     DcMotor left1;
     DcMotor left2;
@@ -95,7 +95,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         //Gyro (this comes first so we can do other things, like initalizing other things, while this calibrates.)
         gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("gyro");
-        gyro.calibrate();
+        //gyro.calibrate();
 
         // Motor Setup
         left1  = hardwareMap.dcMotor.get("left1");
@@ -116,8 +116,8 @@ public abstract class LinearBase extends LinearOpMode{
         leftBp  = hardwareMap.servo.get("left");
         cannon = hardwareMap.servo.get("cannon");
 
-        rightBp.scaleRange(0.1, 0.76);
-        leftBp.scaleRange(0, 0.57);
+        //rightBp.scaleRange(0.1, 0.76);
+        //leftBp.scaleRange(0, 0.57);
 
         rightBp.setPosition(RBP_INIT);
         leftBp.setPosition(LBP_INIT);
@@ -151,9 +151,11 @@ public abstract class LinearBase extends LinearOpMode{
         gamepad2.setJoystickDeadzone(DEADZONE);
 
         if(verbose){telemetry.addData("Done: ","Everything but gyro. Took " + (getRuntime()-start) + " seconds"); telemetry.update();}
+        /*
         while (!isStopRequested() && gyro.isCalibrating())  { // Make sure that the gyro is calibrated
             Thread.sleep(50);
         }
+        */
 
         if(verbose){telemetry.addData("Done: ","Initalizing. Took " + (getRuntime()-start) + " seconds"); telemetry.update();}
 
@@ -211,8 +213,10 @@ public abstract class LinearBase extends LinearOpMode{
 
         //This if tests if the speed is negative and sets the distance to be negative.
         //I have no idea if this is needed when moving backwards
-        if(Math.abs(speed) == -1*speed && Math.abs(distance) == distance) // if it is negative.
+        if(Math.abs(speed) == -1*speed && Math.abs(distance) == distance) // If speed isnegative and distance is positive
         {distance *= -1;}
+        else if(Math.abs(distance) == distance*-1 && Math.abs(speed) == speed) // If distance is negative and speed is positive
+        {speed *= -1;}
 
         right1.setTargetPosition((int) (right1.getCurrentPosition() + distance));
         right2.setTargetPosition((int) (right2.getCurrentPosition() + distance));
@@ -237,8 +241,6 @@ public abstract class LinearBase extends LinearOpMode{
         left1.setPower(0);
         left2.setPower(0);
 
-        Thread.sleep(300);
-
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION) // last thing to do
         {
             right1.setMode(defualtRunMode);
@@ -246,6 +248,8 @@ public abstract class LinearBase extends LinearOpMode{
             left2.setMode(defualtRunMode);
             left1.setMode(defualtRunMode);
         }
+
+        Thread.sleep(300);
     }
 
     public void turn(double speed, double distance, Direction d) throws InterruptedException
@@ -399,13 +403,6 @@ public abstract class LinearBase extends LinearOpMode{
     private double decrease(double x) // just put it into wolfram alpha and see the beauty
     {return (Math.cos(3*x)+1)/2;}
 
-    /*
-    * Blue Min: 0
-    * Blue Max: 0.75
-    *
-    * Red Press: 0.8
-    * Red Min: 0.0
-    * */
     public void pressAndTest(Servo servo, ColorSensor sensor, double pressDistance, double servoMin, int colorWanted) throws InterruptedException
     {
         if(colorWanted != Color.RED && colorWanted != Color.BLUE)
@@ -436,23 +433,35 @@ public abstract class LinearBase extends LinearOpMode{
         {
             telemetry.addData("Red",  sensor.red());
             telemetry.addData("Blue", sensor.blue());
-            telemetry.update();
         }
 
+        if(sensor.red() == 0 && sensor.blue() == 0)
+        {
+            telemetry.addData("Error", "Nothing seen and function quit");
+        }
+
+        telemetry.update();
+
         double startTime = getRuntime();
-        while(((sensor.red() > sensor.blue() && colorWanted == Color.BLUE) || (sensor.blue() > sensor.red() && colorWanted == Color.RED)) && getRuntime()-startTime < 5) // while the color seen is not the one we wanted
+        while(opModeIsActive() && ((sensor.red() > sensor.blue() && colorWanted == Color.BLUE) || (sensor.blue() > sensor.red() && colorWanted == Color.RED))/* && getRuntime()-startTime < 7.5*/) // while the color seen is not the one we wanted
         {
             servo.setPosition(servoMin); // Move all the way back
-            Thread.sleep(75); // Giving time to move and stop
+            Thread.sleep(200); // Giving time to move and stop
 
             servo.setPosition(pressDistance); // go in for the press
             Thread.sleep(75); // time to move
 
-            Thread.sleep(500); // Time to change
+            Thread.sleep(450); // Time to change
+
+            telemetry.addData("Time", getRuntime()-startTime);
+            telemetry.update();
         }
 
         servo.setPosition(servoMin);
         sensor.enableLed(true);
+
+        telemetry.addData("Time", "Took: " + (getRuntime() - startTime) + " seconds");
+        telemetry.update();
     }
 
     public void alignToLine()
@@ -462,6 +471,11 @@ public abstract class LinearBase extends LinearOpMode{
 
     public void moveCloserToWall(double inputMinDistance)
     {
-        final double minDistance = 14; // CM, 15 from base of sensor
+
+    }
+
+    public void turnBackTo(double maxSpeed, int deg)
+    {
+
     }
 }

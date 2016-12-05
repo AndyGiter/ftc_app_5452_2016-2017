@@ -30,6 +30,7 @@ public class SensorTester extends LinearBase {
         waitForStart();
 
         while(opModeIsActive()) {
+
             updateHsv();
             colorTelemetry(red, hsvValuesRed[0]);
             colorTelemetry(blue, hsvValuesBlue[0]);
