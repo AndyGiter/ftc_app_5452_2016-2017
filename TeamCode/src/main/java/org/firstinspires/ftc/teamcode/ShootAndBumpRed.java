@@ -15,12 +15,9 @@ public class ShootAndBumpRed extends LinearBase {
     {
         initalize();
         waitForStart();
+        Thread.sleep(100);
 
-        move(0.75, 1440 * 0.2);
-
-        shoot();
-
-        move(0.75, 1440 * 1.0);
+        moveShootMove(0.75, 1440*1.4, 0);
 
         turn(0.75, 1440 * (2.0 / 3.0), Direction.RIGHT);
 
@@ -35,5 +32,16 @@ public class ShootAndBumpRed extends LinearBase {
     {
         cannon.setPosition(0);
         Thread.sleep(200);
+    }
+
+    public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
+    {
+        if(distBeforeShoot != 0)
+            move(speed, distBeforeShoot);
+
+        cannon.setPosition(0);
+        Thread.sleep(200);
+
+        move(speed, totalDist - distBeforeShoot);
     }
 }
