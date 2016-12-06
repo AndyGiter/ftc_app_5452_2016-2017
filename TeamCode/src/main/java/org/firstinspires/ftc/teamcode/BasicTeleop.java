@@ -9,6 +9,28 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Created by mlowery2 on 9/21/2016.
  */
 
+/*
+* TODO:
+* Clean up program
+* Slow mode
+* Swap motor direction button(s)
+**/
+
+/*
+* Controls
+* Right Joystick: Right Motors
+* Left Joystick: Left Motors
+*
+*
+* TODO:
+* RT: Ball collector
+* A: Ball Shooter
+* DPad up: Forward Mode
+* DPad down: Backward Mode
+* DPad left: Slow
+* DPad right: Fast
+* Cannon: ???????????????????????????
+* */
 
 @TeleOp(name="Basic Teleop", group="Teleop")
 
@@ -19,24 +41,7 @@ public class BasicTeleop extends LinearBase {
         initalize();
         waitForStart();
 
-        while(opModeIsActive())
-        {
-            if(gamepad1.x) // left
-            {
-                leftBp.setPosition(1);
-                rightBp.setPosition(1);
-            }
-            else if(gamepad1.y) // middle
-            {
-                leftBp.setPosition(RBP_INIT);
-                rightBp.setPosition(LBP_INIT);
-            }
-            else if(gamepad1.b) // right
-            {
-                leftBp.setPosition(0);
-                rightBp.setPosition(0);
-            }
-            else if(gamepad1.a)
+            if(gamepad1.a)
             {
                 cannon.setPosition(0);
             }
@@ -45,7 +50,7 @@ public class BasicTeleop extends LinearBase {
             moveRight(-1 * gamepad1.right_stick_y, -1);
             moveLeft(-1 * gamepad1.left_stick_y, -1);
 
-        }
+
     } // End of running code
      //  Start of Functions
 
