@@ -20,7 +20,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 * Controls
 * Right Joystick: Right Motors
 * Left Joystick: Left Motors
-*
+* A: Old ball shooter
 *
 * TODO:
 * RT: Ball collector
@@ -29,46 +29,52 @@ import com.qualcomm.robotcore.hardware.Servo;
 * DPad down: Backward Mode
 * DPad left: Slow
 * DPad right: Fast
-* Cannon: ???????????????????????????
 * */
 
 @TeleOp(name="Basic Teleop", group="Teleop")
 
 public class BasicTeleop extends LinearBase {
 
-    public void runOpMode() throws InterruptedException {
+    private final double SLOW_MOD = 0.3; // 30% of normal speed
+    private boolean slow = false;
+    private Direction currentDirection = Direction.FORWARD;
 
-        initalize();
+    public void runOpMode() throws InterruptedException
+    {
+
+        initalize(DcMotor.RunMode.RUN_USING_ENCODER);
         waitForStart();
 
-            if(gamepad1.a)
+        while(opModeIsActive())
+        {
+            if(gamepad1.a) // TODO: Update when new ball shooter is on the robot
             {
                 cannon.setPosition(0);
             }
 
+            if(gamepad1.dpad_left && !slow)
+            {
+                slow = true;
+            }
+            else if(gamepad1.dpad_right && slow)
+            {
+                slow = false;
+            }
 
-            moveRight(-1 * gamepad1.right_stick_y, -1);
-            moveLeft(-1 * gamepad1.left_stick_y, -1);
+            if(gamepad1.dpad_up && currentDirection == Direction.BACKWARD)
+            {
+                currentDirection = Direction.FORWARD;
+            }
+            else if(gamepad1.dpad_down && currentDirection == Direction.FORWARD)
+            {
+                currentDirection = Direction.BACKWARD;
+            }
 
+            left1.setPower(-1 * gamepad1.right_stick_y);
+            left2.setPower(-1 * gamepad1.right_stick_y);
+            right1.setPower(-1 * gamepad1.left_stick_y);
+            right2.setPower(-1 * gamepad1.left_stick_y);
 
-    } // End of running code
-     //  Start of Functions
-
-    public void moveLeft(float speed, int dist)
-    {
-        if(dist<0) // so that I dont have to input a distance for the encodes to go
-        {
-            left1.setPower(speed);
-            left2.setPower(speed);
-        }
-    }
-
-    public void moveRight(float speed, int dist)
-    {
-        if(dist<0)
-        {
-            right1.setPower(speed);
-            right2.setPower(speed);
         }
     }
 }
