@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
  // Misc.
-import com.qualcomm.robotcore.hardware.I2cAddr; // TODO: Make sure that all I2c addresses are set correctly on all sensors and record what they are in this program.
+import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.util.Range;
 
 import android.graphics.Color;
@@ -74,7 +74,7 @@ public abstract class LinearBase extends LinearOpMode{
     private I2cAddr i2cAddrRangeLeft = I2cAddr.create8bit(0x28);
     private I2cAddr i2cAddrRangeRight = I2cAddr.create8bit(0x26);
 
-    enum Direction {LEFT, RIGHT};
+    enum Direction {LEFT, RIGHT, FORWARD, BACKWARD};
     enum Side {RED, BLUE};
 
     DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
@@ -275,7 +275,7 @@ public abstract class LinearBase extends LinearOpMode{
             left2.setPower(speed);
         }
 
-        else
+        else if(d == Direction.LEFT)
         {
             right1.setTargetPosition((int) (right1.getCurrentPosition() + distance));
             right2.setTargetPosition((int) (right2.getCurrentPosition() + distance));
@@ -287,6 +287,11 @@ public abstract class LinearBase extends LinearOpMode{
             left1.setPower(-1 * speed);
             left2.setPower(-1 * speed);
 
+        }
+
+        else
+        {
+            return;
         }
 
         while(opModeIsActive() && right1.isBusy() &&
