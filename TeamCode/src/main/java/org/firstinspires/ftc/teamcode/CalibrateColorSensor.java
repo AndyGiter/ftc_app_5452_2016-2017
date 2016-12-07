@@ -5,11 +5,13 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.I2cController;
 import com.qualcomm.robotcore.hardware.I2cController.I2cPortReadyCallback;
 import java.util.concurrent.locks.Lock;
+import com.qualcomm.robotcore.hardware.I2cAddr;
 
 /*
 * Found here: https://ftc-tricks.com/color-sensor-calibration/
 *
 * NOT MADE BY ME OR ANYONE ON 5452
+* but was updated by me
 * */
 
 /**
@@ -43,7 +45,7 @@ public class CalibrateColorSensor extends OpMode implements I2cPortReadyCallback
     double timeStartedWorking = 0.0;
 
     // I2C address, registers, and commands
-    public byte COLOR_SENSOR_ADDR = 0x3C;
+    public I2cAddr COLOR_SENSOR_ADDR = I2cAddr.create8bit(0x3c);
     public byte COMMAND_CODE_BLACK = 0x42;
     public byte COMMAND_CODE_WHITE = 0x43;
     public byte COMMAND_CODE_LED_ON = 0x00;
@@ -166,7 +168,7 @@ public class CalibrateColorSensor extends OpMode implements I2cPortReadyCallback
             wLock.lock();
 
             // Enable write mode on the controller.
-            //controller.enableI2cWriteMode(port, COLOR_SENSOR_ADDR, 0x03, 1); PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX
+            controller.enableI2cWriteMode(port, COLOR_SENSOR_ADDR, 0x03, 1);
 
             // Write the supplied command to the relevant register.
             wCache[WRITE_CACHE_OFFSET] = command;
@@ -202,7 +204,7 @@ public class CalibrateColorSensor extends OpMode implements I2cPortReadyCallback
 
             // During reset, we move back to read mode.
             case RESET:
-                //controller.enableI2cReadMode(port, COLOR_SENSOR_ADDR, 0x03, 6); PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX PLS FIX V
+                controller.enableI2cReadMode(port, COLOR_SENSOR_ADDR, 0x03, 6);
                 controller.writeI2cCacheToController(port);
                 controller_mode = I2CMode.READ;
                 break;
