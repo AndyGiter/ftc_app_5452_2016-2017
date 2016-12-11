@@ -32,7 +32,7 @@ public class ServoTeleop extends LinearBase { // Just to find the min max positi
                 pos -= changeBy;
             }
 
-            updateHsv();
+            //updateHsv();
 
             telemetry.addData("Servo Position ", "%5.2f", pos);
             telemetry.update();

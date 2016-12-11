@@ -19,6 +19,9 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.util.Range;
 
 import android.graphics.Color;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 /**
  * Created by mlowery2 on 11/8/2016.
  *
@@ -51,28 +54,16 @@ public abstract class LinearBase extends LinearOpMode{
     DcMotor right1;
     DcMotor right2;
 
-    ColorSensor red;    // The red side color sensor (right side)
-    ColorSensor blue;   // The blue side color sensor (left side)
-    ColorSensor bottomLeft; // The color sensor on the bottom (for detecting lines.)
-    ColorSensor bottomRight; // The color sensor on the bottom (for detecting lines.)
+    ColorSensor bottom;    // The red side color sensor (right side)
+    ColorSensor front;
 
-    private I2cAddr i2cAddrRed    = I2cAddr.create8bit(0x3c); // If you replace a color sensor make sure to set the I2C address to the right one
-    private I2cAddr i2cAddrBlue   = I2cAddr.create8bit(0x3a); // Also, port 0 for the I2C sensors doesnt work
-    private I2cAddr i2cAddrBottomLeft = I2cAddr.create8bit(0x4c);
-    private I2cAddr i2cAddrBottomRight = I2cAddr.create8bit(0x4a);
+    private I2cAddr i2cAddrFront    = I2cAddr.create8bit(0x3a); // If you replace a color sensor make sure to set the I2C address to the right one
+    private I2cAddr i2cAddrBottom   = I2cAddr.create8bit(0x4a);
 
-    float hsvValuesRed[]    = {0F, 0F, 0F};
-    float hsvValuesBlue[]   = {0F, 0F, 0F};
-    float hsvValuesBottomLeft[] = {0F, 0F, 0F};
-    float hsvValuesBottomRight[] = {0F, 0F, 0F};
+    float hsvValuesFront[]    = {0F, 0F, 0F};
+    float hsvValuesBottom[]   = {0F, 0F, 0F};
 
     ModernRoboticsI2cGyro gyro; // Default I2C address 0x20
-
-    ModernRoboticsI2cRangeSensor rangeLeft;
-    ModernRoboticsI2cRangeSensor rangeRight;
-
-    private I2cAddr i2cAddrRangeLeft = I2cAddr.create8bit(0x28);
-    private I2cAddr i2cAddrRangeRight = I2cAddr.create8bit(0x26);
 
     enum Direction {LEFT, RIGHT, FORWARD, BACKWARD};
     enum Side {RED, BLUE};
@@ -95,7 +86,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         //Gyro (this comes first so we can do other things, like initalizing other things, while this calibrates.)
         gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("gyro");
-        //gyro.calibrate();
+        gyro.calibrate();
 
         // Motor Setup
         left1  = hardwareMap.dcMotor.get("left1");
@@ -124,38 +115,25 @@ public abstract class LinearBase extends LinearOpMode{
         cannon.setPosition(C_INIT);
 
         //Color Sensor Setup
-        red = hardwareMap.colorSensor.get("red");
-        blue = hardwareMap.colorSensor.get("blue");
-        bottomLeft = hardwareMap.colorSensor.get("bottomLeft");
-        bottomRight = hardwareMap.colorSensor.get("bottomRight");
+        front = hardwareMap.colorSensor.get("front");
+        bottom = hardwareMap.colorSensor.get("bottom");
 
-        red.setI2cAddress(i2cAddrRed);
-        blue.setI2cAddress(i2cAddrBlue);
-        bottomLeft.setI2cAddress(i2cAddrBottomLeft);
-        bottomRight.setI2cAddress(i2cAddrBottomRight);
+        front.setI2cAddress(i2cAddrFront);
+        bottom.setI2cAddress(i2cAddrBottom);
 
-        red.enableLed(true);
-        blue.enableLed(true);
-        bottomLeft.enableLed(true);
-        bottomRight.enableLed(true);
-
-        // Range sensor setup
-        rangeLeft = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rangeLeft");
-        rangeRight = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rangeRight");
-
-        rangeLeft.setI2cAddress(i2cAddrRangeLeft);
-        rangeRight.setI2cAddress(i2cAddrRangeRight);
+        front.enableLed(false); // Reading the beacon is easier with the light off
+        bottom.enableLed(true);
 
         // Setting the deadzone for the gamepads
         gamepad1.setJoystickDeadzone(DEADZONE);
         gamepad2.setJoystickDeadzone(DEADZONE);
 
         if(verbose){telemetry.addData("Done: ","Everything but gyro. Took " + (getRuntime()-start) + " seconds"); telemetry.update();}
-        /*
+
         while (!isStopRequested() && gyro.isCalibrating())  { // Make sure that the gyro is calibrated
             Thread.sleep(50);
         }
-        */
+
 
         if(verbose){telemetry.addData("Done: ","Initalizing. Took " + (getRuntime()-start) + " seconds"); telemetry.update();}
 
@@ -178,12 +156,9 @@ public abstract class LinearBase extends LinearOpMode{
         initalize();
     }
 
-    public void updateHsv()
+    public void updateHsv(ColorSensor sensor, float[] hsvValues)
     {
-        Color.RGBToHSV(red.red() * 8,    red.green() * 8,    red.blue() * 8,    hsvValuesRed);
-        Color.RGBToHSV(blue.red() * 8,   blue.green() * 8,   blue.blue() * 8,   hsvValuesBlue);
-        Color.RGBToHSV(bottomLeft.red() * 8, bottomLeft.green() * 8, bottomLeft.blue() * 8, hsvValuesBottomLeft);
-        Color.RGBToHSV(bottomRight.red() * 8, bottomRight.green() * 8, bottomRight.blue() * 8, hsvValuesBottomRight);
+        Color.RGBToHSV(sensor.red() * 8, sensor.green() * 8, sensor.blue() * 8, hsvValues);
     }
 
     public int colorSeen(ColorSensor sensor) // RGB only
@@ -328,7 +303,8 @@ public abstract class LinearBase extends LinearOpMode{
         final int TURN_RANGE = 10;
         int targetHeading = gyro.getIntegratedZValue() + deg;
 
-        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) {
+        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
+        {
             right1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             right2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             left2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -408,79 +384,68 @@ public abstract class LinearBase extends LinearOpMode{
     private double decrease(double x) // just put it into wolfram alpha and see the beauty
     {return (Math.cos(3*x)+1)/2;}
 
-    public void pressAndTest(Servo servo, ColorSensor sensor, double pressDistance, double servoMin, int colorWanted) throws InterruptedException
+    public void pressAndTest(double speed, double distanceToWall, int colorWanted) throws InterruptedException
     {
-        if(colorWanted != Color.RED && colorWanted != Color.BLUE)
-        {
-            telemetry.addData("Error", "colorWanted is not a valid color");
-            telemetry.update();
-            return; // https://www.youtube.com/watch?v=LUpBSvN1a50
-        }
-
-        if(sensor.red() == 255 && sensor.blue() == 255 && sensor.green() == 255) // Just a failsafe
-        {
-            telemetry.addData("Error", "Sensors both returned: " + sensor.blue());
-            telemetry.update();
-            return; // https://www.youtube.com/watch?v=LUpBSvN1a50
-        }
-
-        sensor.enableLed(false);
-
-        servo.setPosition(servoMin); // Move all the way back
-        Thread.sleep(75); // Giving time to move and stop
-
-        servo.setPosition(pressDistance); // go in for the press
-        Thread.sleep(75); // time to move
-
-        Thread.sleep(500);
-
-        if(verbose)
-        {
-            telemetry.addData("Red",  sensor.red());
-            telemetry.addData("Blue", sensor.blue());
-        }
-
-        if(sensor.red() == 0 && sensor.blue() == 0)
-        {
-            telemetry.addData("Error", "Nothing seen and function quit");
-        }
-
-        telemetry.update();
+        final int WAIT_BEFORE_MOVE = 0; // set to something like 4000 because of the time needed before pressing the button again
+        final double MOVE_BACK_DIST = 1440*0.5;
+        final int WAIT_BEFORE_READ = 300;
 
         double startTime = getRuntime();
-        while(opModeIsActive() && ((sensor.red() > sensor.blue() && colorWanted == Color.BLUE) || (sensor.blue() > sensor.red() && colorWanted == Color.RED))/* && getRuntime()-startTime < 7.5*/) // while the color seen is not the one we wanted
+
+        move(speed, -1*distanceToWall); // move twords wall
+
+        double pressTime = getRuntime();
+
+        sleep(WAIT_BEFORE_READ);
+
+        if(front.red() == 0 && front.blue() == 0) // no need to test green because its useless :(
         {
-            servo.setPosition(servoMin); // Move all the way back
-            Thread.sleep(200); // Giving time to move and stop
-
-            servo.setPosition(pressDistance); // go in for the press
-            Thread.sleep(75); // time to move
-
-            Thread.sleep(450); // Time to change
-
-            telemetry.addData("Time", getRuntime()-startTime);
+            telemetry.addData("Warning", "Not close enough to sense beacon color");
             telemetry.update();
         }
 
-        servo.setPosition(servoMin);
-        sensor.enableLed(true);
+        else if((front.red() > front.blue() && colorWanted == Color.BLUE) || (front.blue() > front.red() && colorWanted == Color.RED))
+        {
+            if(verbose)
+            {
+                colorTelemetry(front, hsvValuesFront);
+                telemetry.update();
+            }
 
-        telemetry.addData("Time", "Took: " + (getRuntime() - startTime) + " seconds");
-        telemetry.update();
-    }
+            while(getRuntime()-pressTime < WAIT_BEFORE_MOVE){sleep(50);} // making sure to wait enough time before pressing again
 
-    public void alignToLine()
-    {
+            move(speed, MOVE_BACK_DIST); // move back from wall
+            move(speed, -1*MOVE_BACK_DIST); // move back in, hitting the button
+        }
 
-    }
-
-    public void moveCloserToWall(double inputMinDistance)
-    {
-
+        move(speed, distanceToWall); // move back to position started in
     }
 
     public void turnBackTo(double maxSpeed, int deg)
     {
 
+    }
+
+    public void gyroTelemetry(ModernRoboticsI2cGyro sensorGyro)
+    {
+        telemetry.addData("Gyro: ", sensorGyro.getIntegratedZValue() + "");
+        telemetry.addData("Gyro Heading: ", sensorGyro.getHeading() + "");
+    }
+
+    public void rangeTelemety(ModernRoboticsI2cRangeSensor rangeSensor)
+    {
+        telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
+        telemetry.addData("raw optical", rangeSensor.rawOptical());
+        telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
+        telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM)); // what to use
+    }
+
+    public void colorTelemetry(ColorSensor color, float[] hsvVals)
+    {
+        telemetry.addData("Red", color.red());
+        telemetry.addData("Blue", color.blue());
+        telemetry.addData("Green", color.green());
+        telemetry.addData("Alpha", color.alpha());
+        telemetry.addData("HSV", hsvVals);
     }
 }
