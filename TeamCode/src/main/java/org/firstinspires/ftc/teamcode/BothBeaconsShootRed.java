@@ -14,14 +14,6 @@ public class BothBeaconsShootRed extends LinearBase {
 
     public void runOpMode() throws InterruptedException
     {
-        initalize(true);
-        waitForStart();
 
-        pressAndTest(rightBp, red, 0.8, 0, Color.RED);
-
-        telemetry.addData("Distance", rangeRight.getDistance(DistanceUnit.CM) + ""); // ramge 12-15
-        telemetry.update();
-
-        while(opModeIsActive()){Thread.sleep(50);}
     }
 }
