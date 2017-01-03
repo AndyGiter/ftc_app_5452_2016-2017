@@ -27,15 +27,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  *
  * I2C address checklist:
  *
- * Color Sensors
- * red:         0x3c // Default
- * blue:        0x1c
- * bottomLeft:  0x5c
- * bottomRight: 0x7c
- *
- * Range Sensors
- * left:  0x28 // Default
- * right: 0x26
+ * Color Sensors // Make sure to check these
+ * front: 0x4c
+ * bottom: 0x4a
  *
  * Gyro Sensor
  * gyro: 0x20 // Default
@@ -57,7 +51,7 @@ public abstract class LinearBase extends LinearOpMode{
     ColorSensor bottom;    // The red side color sensor (right side)
     ColorSensor front;
 
-    private I2cAddr i2cAddrFront    = I2cAddr.create8bit(0x3a); // If you replace a color sensor make sure to set the I2C address to the right one
+    private I2cAddr i2cAddrFront    = I2cAddr.create8bit(0x4c); // If you replace a color sensor make sure to set the I2C address to the right one
     private I2cAddr i2cAddrBottom   = I2cAddr.create8bit(0x4a);
 
     float hsvValuesFront[]    = {0F, 0F, 0F};
@@ -73,11 +67,9 @@ public abstract class LinearBase extends LinearOpMode{
     private final float DEADZONE = 0.200f;
 
     boolean verbose = false;
-    /* Template for using telemetry in a function
 
-    if(verbose){telemetry.addData("",""); telemetry.update();}
-
-    */
+    final double MAX_MOVE_SPEED = 0.8;
+    final double MAX_TURN_SPEED = 0.5; // Need to test
 
     public void initalize() throws InterruptedException
     {
@@ -300,7 +292,7 @@ public abstract class LinearBase extends LinearOpMode{
      */
     public void turn(double maxSpeed, int deg) throws InterruptedException
     {
-        final int TURN_RANGE = 10;
+        final int TURN_RANGE = 6;
         int targetHeading = gyro.getIntegratedZValue() + deg;
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
