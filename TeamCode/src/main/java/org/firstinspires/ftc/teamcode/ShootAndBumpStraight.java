@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 /**
  * Created by mlowery2 on 12/3/2016.
  */
-@Autonomous(name = "Shoot and Bump, STRAIGHT", group ="testing")
+@Autonomous(name = "Shoot and Bump, STRAIGHT", group ="auto")
 public class ShootAndBumpStraight extends LinearBase {
 
     public void runOpMode() throws InterruptedException

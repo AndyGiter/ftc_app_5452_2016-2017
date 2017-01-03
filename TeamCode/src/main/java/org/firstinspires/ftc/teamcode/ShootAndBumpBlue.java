@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 /**
  * Created by mlowery2 on 11/7/2016.
  */
-@Autonomous(name = "Shoot and Bump, BLUE SIDE", group ="testing")
+@Autonomous(name = "Shoot and Bump, BLUE SIDE", group ="auto")
 public class ShootAndBumpBlue extends LinearBase {
 
     public void runOpMode() throws InterruptedException
