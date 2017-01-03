@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.util.Range;
 public class TurnTest extends LinearBase {
 
     double turnSpeed = 0.1; // Default
-    final int TURN_DEG = 360;
+    final int TURN_DEG = 180;
     final int WAIT_TIME = 100;
 
     @Override
