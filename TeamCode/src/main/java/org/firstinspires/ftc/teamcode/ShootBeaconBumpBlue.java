@@ -16,15 +16,4 @@ public class ShootBeaconBumpBlue extends LinearBase {
         Thread.sleep(100);
 
     }
-
-    public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
-    {
-        if(distBeforeShoot != 0)
-            move(speed, distBeforeShoot);
-
-        cannon.setPosition(0);
-        Thread.sleep(200);
-
-        move(speed, totalDist - distBeforeShoot);
-    }
 }

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Color;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 /**
@@ -9,22 +11,22 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 @Autonomous(name = "Shoot Beacon Bump RED", group ="auto")
 public class ShootBeaconBumpRed extends LinearBase {
 
-    public void runOpMode() throws InterruptedException
-    {
+    public void runOpMode() throws InterruptedException {
         initalize();
+        front.enableLed(false);
         waitForStart();
         Thread.sleep(100);
 
-    }
+        pressAndTest(0.8, 1440, Color.RED); // apparently slower is better
 
-    public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
-    {
-        if(distBeforeShoot != 0)
-            move(speed, distBeforeShoot);
+        /*
+        moveShootMove(0.75, 1440 * 1.4, 0); // forward 1440*1.4
 
-        cannon.setPosition(0);
-        Thread.sleep(200);
+        turn(0.4, -45); // right 45
 
-        move(speed, totalDist - distBeforeShoot);
+        move(0.8, 1440); // forward 1440
+
+        turn(0.4, -45); // right 45
+        */
     }
 }

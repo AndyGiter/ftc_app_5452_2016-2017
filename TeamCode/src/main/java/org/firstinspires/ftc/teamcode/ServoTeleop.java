@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by mlowery2 on 9/27/2016.
+ *
+ * We dont have any more servos on the robot so this program is useless untill we get more servos
  */
 @TeleOp(name="Servo Teleop", group="Testing")
 public class ServoTeleop extends LinearBase { // Just to find the min max positions of any servo
@@ -36,7 +38,7 @@ public class ServoTeleop extends LinearBase { // Just to find the min max positi
 
             telemetry.addData("Servo Position ", "%5.2f", pos);
             telemetry.update();
-            cannon.setPosition(pos);
+            //cannon.setPosition(pos);
             Thread.sleep(waitTime);
         }
     }

@@ -26,11 +26,9 @@ public class ColorTesting extends LinearBase {
 
         while(opModeIsActive())
         {
-            updateHsv(front, hsvValuesFront); // no idea if this works
-            updateHsv(bottom, hsvValuesBottom);
+            Color.RGBToHSV(front.red(), front.blue(), front.blue(), hsvValuesFront);
 
             colorTelemetry(front, hsvValuesFront);
-            colorTelemetry(bottom, hsvValuesBottom);
             telemetry.update();
         }
     }
