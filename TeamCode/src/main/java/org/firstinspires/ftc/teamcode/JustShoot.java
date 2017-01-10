@@ -16,10 +16,4 @@ public class JustShoot extends LinearBase {
 
         shoot();
     }
-
-    public void shoot() throws InterruptedException
-    {
-        cannon.setPosition(0);
-        Thread.sleep(200);
-    }
 }

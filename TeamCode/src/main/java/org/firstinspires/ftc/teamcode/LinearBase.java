@@ -29,33 +29,25 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  *
  * Color Sensors // Make sure to check these
  * front: 0x4c
- * bottom: 0x4a
  *
  * Gyro Sensor
  * gyro: 0x20 // Default
  */
 public abstract class LinearBase extends LinearOpMode{
-    Servo rightBp;
-    Servo leftBp;
-    Servo cannon;
-
-    final double RBP_INIT = 0.5;
-    final double LBP_INIT = 0.5;
-    final double C_INIT   = 0.10; // was 0.18
 
     DcMotor left1;
     DcMotor left2;
     DcMotor right1;
     DcMotor right2;
 
-    ColorSensor bottom;    // The red side color sensor (right side)
+    DcMotor shooter;
+    DcMotor collector;
+
     ColorSensor front;
 
-    private I2cAddr i2cAddrFront    = I2cAddr.create8bit(0x4c); // If you replace a color sensor make sure to set the I2C address to the right one
-    private I2cAddr i2cAddrBottom   = I2cAddr.create8bit(0x4a);
+    private I2cAddr i2cAddrFront    = I2cAddr.create8bit(0x4c);
 
     float hsvValuesFront[]    = {0F, 0F, 0F};
-    float hsvValuesBottom[]   = {0F, 0F, 0F};
 
     ModernRoboticsI2cGyro gyro; // Default I2C address 0x20
 
@@ -69,7 +61,7 @@ public abstract class LinearBase extends LinearOpMode{
     boolean verbose = false;
 
     final double MAX_MOVE_SPEED = 0.8;
-    final double MAX_TURN_SPEED = 0.5; // Need to test
+    final double MAX_TURN_SPEED = 0.45;
 
     public void initalize() throws InterruptedException
     {
@@ -86,35 +78,26 @@ public abstract class LinearBase extends LinearOpMode{
         right1 = hardwareMap.dcMotor.get("right1");
         right2 = hardwareMap.dcMotor.get("right2");
 
-        left1.setDirection(DcMotor.Direction.REVERSE);
-        left2.setDirection(DcMotor.Direction.REVERSE);
+        shooter = hardwareMap.dcMotor.get("snail"); // See if there is a need to reverse these.
+        collector = hardwareMap.dcMotor.get("feed");
+
+        right1.setDirection(DcMotor.Direction.REVERSE);
+        right2.setDirection(DcMotor.Direction.REVERSE);
 
         right1.setMode(defualtRunMode);
         right2.setMode(defualtRunMode);
         left2.setMode(defualtRunMode);
         left1.setMode(defualtRunMode);
 
-        // Servo Setup
-        rightBp = hardwareMap.servo.get("right");
-        leftBp  = hardwareMap.servo.get("left");
-        cannon = hardwareMap.servo.get("cannon");
-
-        //rightBp.scaleRange(0.1, 0.76);
-        //leftBp.scaleRange(0, 0.57);
-
-        rightBp.setPosition(RBP_INIT);
-        leftBp.setPosition(LBP_INIT);
-        cannon.setPosition(C_INIT);
+        collector.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //Color Sensor Setup
         front = hardwareMap.colorSensor.get("front");
-        bottom = hardwareMap.colorSensor.get("bottom");
 
         front.setI2cAddress(i2cAddrFront);
-        bottom.setI2cAddress(i2cAddrBottom);
 
-        front.enableLed(false); // Reading the beacon is easier with the light off
-        bottom.enableLed(true);
+        front.enableLed(false);
 
         // Setting the deadzone for the gamepads
         gamepad1.setJoystickDeadzone(DEADZONE);
@@ -128,6 +111,7 @@ public abstract class LinearBase extends LinearOpMode{
 
 
         if(verbose){telemetry.addData("Done: ","Initalizing. Took " + (getRuntime()-start) + " seconds"); telemetry.update();}
+        else{telemetry.addData("Done", "Initalizing"); telemetry.update();}
 
     }
     public void initalize(DcMotor.RunMode newDefualtRunMode) throws InterruptedException
@@ -146,11 +130,6 @@ public abstract class LinearBase extends LinearOpMode{
         defualtRunMode = newDefualtRunMode;
         verbose = newVerbose;
         initalize();
-    }
-
-    public void updateHsv(ColorSensor sensor, float[] hsvValues)
-    {
-        Color.RGBToHSV(sensor.red() * 8, sensor.green() * 8, sensor.blue() * 8, hsvValues);
     }
 
     public int colorSeen(ColorSensor sensor) // RGB only
@@ -416,6 +395,22 @@ public abstract class LinearBase extends LinearOpMode{
     public void turnBackTo(double maxSpeed, int deg)
     {
 
+    }
+
+    public void shoot()
+    {
+
+    }
+
+    public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
+    {
+        if(distBeforeShoot != 0)
+            move(speed, distBeforeShoot);
+
+        //cannon.setPosition(0);
+        Thread.sleep(200);
+
+        move(speed, totalDist - distBeforeShoot);
     }
 
     public void gyroTelemetry(ModernRoboticsI2cGyro sensorGyro)
