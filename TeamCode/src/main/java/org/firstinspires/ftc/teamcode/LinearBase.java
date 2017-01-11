@@ -97,7 +97,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         front.setI2cAddress(i2cAddrFront);
 
-        front.enableLed(false);
+        front.enableLed(true);
 
         // Setting the deadzone for the gamepads
         gamepad1.setJoystickDeadzone(DEADZONE);
@@ -112,6 +112,8 @@ public abstract class LinearBase extends LinearOpMode{
 
         if(verbose){telemetry.addData("Done: ","Initalizing. Took " + (getRuntime()-start) + " seconds"); telemetry.update();}
         else{telemetry.addData("Done", "Initalizing"); telemetry.update();}
+
+        front.enableLed(false);
 
     }
     public void initalize(DcMotor.RunMode newDefualtRunMode) throws InterruptedException
@@ -397,9 +399,11 @@ public abstract class LinearBase extends LinearOpMode{
 
     }
 
-    public void shoot()
+    public void shoot() throws InterruptedException
     {
-
+        shooter.setPower(0.5);
+        Thread.sleep(500);
+        shooter.setPower(0);
     }
 
     public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
@@ -407,8 +411,9 @@ public abstract class LinearBase extends LinearOpMode{
         if(distBeforeShoot != 0)
             move(speed, distBeforeShoot);
 
-        //cannon.setPosition(0);
-        Thread.sleep(200);
+        shooter.setPower(0.5);
+        Thread.sleep(500);
+        shooter.setPower(0);
 
         move(speed, totalDist - distBeforeShoot);
     }
