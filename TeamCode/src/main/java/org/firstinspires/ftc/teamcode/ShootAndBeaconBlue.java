@@ -32,6 +32,6 @@ public class ShootAndBeaconBlue extends LinearBase {
 
         move(-MAX_MOVE_SPEED, 1440*2);
 
-        turn(0.45, 80);
+        turn(0.45, 80); // DONT FALL OVER ROBOT
     }
 }

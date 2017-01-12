@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
-// Basic Needed stuff (some needed in the program thiat this will implement.
+// Basic Needed stuff (some needed in the program that this will implement.
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 // Sensors
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -27,7 +25,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  *
  * I2C address checklist:
  *
- * Color Sensors // Make sure to check these
+ * Color Sensors
  * front: 0x4c
  *
  * Gyro Sensor
@@ -45,14 +43,13 @@ public abstract class LinearBase extends LinearOpMode{
 
     ColorSensor front;
 
-    private I2cAddr i2cAddrFront    = I2cAddr.create8bit(0x4c);
+    private I2cAddr i2cAddrFront = I2cAddr.create8bit(0x4c);
 
     float hsvValuesFront[]    = {0F, 0F, 0F};
 
     ModernRoboticsI2cGyro gyro; // Default I2C address 0x20
 
     enum Direction {LEFT, RIGHT, FORWARD, BACKWARD};
-    enum Side {RED, BLUE};
 
     DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
@@ -78,7 +75,7 @@ public abstract class LinearBase extends LinearOpMode{
         right1 = hardwareMap.dcMotor.get("right1");
         right2 = hardwareMap.dcMotor.get("right2");
 
-        shooter = hardwareMap.dcMotor.get("snail"); // See if there is a need to reverse these.
+        shooter = hardwareMap.dcMotor.get("snail"); // TODO: Set this to be reversed and fix all the code that is broken because of that
         collector = hardwareMap.dcMotor.get("feed");
 
         right1.setDirection(DcMotor.Direction.REVERSE);
@@ -90,13 +87,14 @@ public abstract class LinearBase extends LinearOpMode{
         left1.setMode(defualtRunMode);
 
         collector.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // Make sure to set to run to position once a solution is
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //Color Sensor Setup
         front = hardwareMap.colorSensor.get("front");
 
         front.setI2cAddress(i2cAddrFront);
 
+        // Light needs to be off for use, but is on as a visual example that the color sensor is reading commands and that the robot is still initalizing (even though there are other clues)
         front.enableLed(true);
 
         // Setting the deadzone for the gamepads
@@ -116,6 +114,7 @@ public abstract class LinearBase extends LinearOpMode{
         front.enableLed(false);
 
     }
+
     public void initalize(DcMotor.RunMode newDefualtRunMode) throws InterruptedException
     {
         defualtRunMode = newDefualtRunMode;
@@ -134,21 +133,6 @@ public abstract class LinearBase extends LinearOpMode{
         initalize();
     }
 
-    public int colorSeen(ColorSensor sensor) // RGB only
-    {
-        if(sensor.red() > sensor.blue() && sensor.red() > sensor.green())
-            return Color.RED;
-
-        else if(sensor.blue() > sensor.green() && sensor.blue() > sensor.red())
-            return Color.BLUE;
-
-        else if(sensor.green() > sensor.red() && sensor.green() > sensor.blue())
-            return Color.GREEN;
-
-        else
-            return 0; // Technically this is color.TRANSPARENT but that's never going to be usefull and I need a way to return an error
-    }
-
     public void move(double speed, double distance) throws InterruptedException // TODO: Integrate the gyro somehow
     {
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
@@ -161,7 +145,8 @@ public abstract class LinearBase extends LinearOpMode{
 
         //This if tests if the speed is negative and sets the distance to be negative.
         //I have no idea if this is needed when moving backwards
-        if(Math.abs(speed) == -1*speed && Math.abs(distance) == distance) // If speed isnegative and distance is positive
+        //TODO: figure that out
+        if(Math.abs(speed) == -1*speed && Math.abs(distance) == distance) // If speed is negative and distance is positive
         {distance *= -1;}
         else if(Math.abs(distance) == distance*-1 && Math.abs(speed) == speed) // If distance is negative and speed is positive
         {speed *= -1;}
@@ -200,6 +185,8 @@ public abstract class LinearBase extends LinearOpMode{
         Thread.sleep(300);
     }
 
+    // This is just kept around as a brute force turning method if anything goes down
+    @Deprecated
     public void turn(double speed, double distance, Direction d) throws InterruptedException
     {
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
@@ -239,6 +226,8 @@ public abstract class LinearBase extends LinearOpMode{
 
         else
         {
+            telemetry.addData("Error", "Bad input, must be left or right");
+            telemetry.update();
             return;
         }
 
@@ -255,8 +244,6 @@ public abstract class LinearBase extends LinearOpMode{
         left1.setPower(0);
         left2.setPower(0);
 
-        Thread.sleep(300);
-
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION) // last thing to do
         {
             right1.setMode(defualtRunMode);
@@ -264,10 +251,12 @@ public abstract class LinearBase extends LinearOpMode{
             left2.setMode(defualtRunMode);
             left1.setMode(defualtRunMode);
         }
+
+        Thread.sleep(300);
     }
 
     /*
-     * If no direction is given. This is done mainly so I don't have to go back and update old code that doesnt use the gyro and inputs encoder values
+     * If no direction is given. This is done mainly so I don't have to go back and update old code that doesnt use the gyro and uses encoder values
      * Negative deg value turns right
      * Positive is left
      */
@@ -285,52 +274,30 @@ public abstract class LinearBase extends LinearOpMode{
         }
 
         // While the gyro is not within the range (TURN_RANGE)
-        while(!(gyro.getIntegratedZValue() <= targetHeading+(TURN_RANGE/2.0) && gyro.getIntegratedZValue() >= targetHeading-(TURN_RANGE/2.0)) && opModeIsActive()) // make sure this works
+        while(!(gyro.getIntegratedZValue() <= targetHeading+(TURN_RANGE/2.0) && gyro.getIntegratedZValue() >= targetHeading-(TURN_RANGE/2.0)) && opModeIsActive())
         {
-            /**
-             * These next two lines of code are kind of messy. The point is to decrease the speed over the turing distance.
-             * There is probably a better way to do this, but my math and programming skills limit me.
-             *
-             * Hopefully it works
-             */
-        /*
-            double percentDone = Math.abs((targetHeading - gyro.getIntegratedZValue())/deg);
-            double speed = maxSpeed*decrease(percentDone);
-
-            if(speed > maxSpeed || speed <0)
-            {
-                speed = maxSpeed;
-                telemetry.addData("Error: ", "You did it wrong dingus");
-                telemetry.update();
-            }
-
-            //speed = Range.clip(maxSpeed * (Math.abs(gyro.getIntegratedZValue() - targetHeading) / Math.abs(deg)), .01, maxSpeed); // coppied from brendan's code, thanks brendan
-
-            */
-            double speed = maxSpeed; // Uncoment if the thing above doesnt work
 
             if(gyro.getIntegratedZValue() > targetHeading) // Right turn
             {
-                left1.setPower(speed);
-                left2.setPower(speed);
-                right1.setPower(-1*speed);
-                right2.setPower(-1 * speed);
+                left1.setPower(maxSpeed);
+                left2.setPower(maxSpeed);
+                right1.setPower(-1 * maxSpeed);
+                right2.setPower(-1 * maxSpeed);
             }
 
             else //then its a left turn
             {
-                left1.setPower(-1*speed);
-                left2.setPower(-1*speed);
-                right1.setPower(speed);
-                right2.setPower(speed);
+                left1.setPower(-1 * maxSpeed);
+                left2.setPower(-1 * maxSpeed);
+                right1.setPower(maxSpeed);
+                right2.setPower(maxSpeed);
             }
 
             if(verbose)
             {
                 telemetry.addData("Gyro target: ", targetHeading+"");
-                telemetry.addData("Gyro headingL: ", gyro.getIntegratedZValue()+"");
-                //telemetry.addData("Gyro percent done: ", percentDone);
-                telemetry.addData("Robot speed: ", speed+"");
+                telemetry.addData("Gyro heading: ", gyro.getIntegratedZValue()+"");
+                telemetry.addData("Robot speed: ", maxSpeed+"");
                 telemetry.update();
             }
         }
@@ -354,12 +321,9 @@ public abstract class LinearBase extends LinearOpMode{
 
     }
 
-    private double decrease(double x) // just put it into wolfram alpha and see the beauty
-    {return (Math.cos(3*x)+1)/2;}
-
     public void pressAndTest(double speed, double distanceToWall, int colorWanted) throws InterruptedException
     {
-        final double WAIT_BEFORE_MOVE = 5; // set to something like 4000 because of the time needed before pressing the button again
+        final double WAIT_BEFORE_MOVE = 5; // TODO: Test to see what the smallest value for this is
         final double MOVE_BACK_DIST = 1440*0.5 * -1;
         final double SECOND_PRESS_DIST = 1440 * 0.7 * -1;
         final int WAIT_BEFORE_READ = 300;
@@ -368,7 +332,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         double startTime = getRuntime();
 
-        move(speed, -1*distanceToWall); // move twords wall
+        move(speed, -1 * distanceToWall); // move twords wall
 
         double pressTime = getRuntime();
 
@@ -410,19 +374,19 @@ public abstract class LinearBase extends LinearOpMode{
         move(speed, distanceToWall); // move back to position started in
     }
 
-    public void turnBackTo(double maxSpeed, int deg)
+    public void turnBackTo(double maxSpeed, int deg) // TODO: Make this
     {
 
     }
 
-    public void shoot() throws InterruptedException
+    public void shoot() throws InterruptedException // TODO: Make this better (so it resets but without wasting time)
     {
-        shooter.setPower(0.5);
+        shooter.setPower(-0.5);
         Thread.sleep(500);
         shooter.setPower(0);
     }
 
-    public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
+    public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException // TODO: Make this better (so it resets but without wasting time)
     {
         if(distBeforeShoot != 0)
             move(speed, distBeforeShoot);
@@ -440,6 +404,7 @@ public abstract class LinearBase extends LinearOpMode{
         telemetry.addData("Gyro Heading: ", sensorGyro.getHeading() + "");
     }
 
+    // Not in use (and I dont think it will be again) but just if we need it, this is still here
     public void rangeTelemety(ModernRoboticsI2cRangeSensor rangeSensor)
     {
         telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
@@ -448,12 +413,17 @@ public abstract class LinearBase extends LinearOpMode{
         telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM)); // what to use
     }
 
-    public void colorTelemetry(ColorSensor color, float[] hsvVals)
+    public void colorTelemetry(ColorSensor color)
     {
         telemetry.addData("Red", color.red());
         telemetry.addData("Blue", color.blue());
         telemetry.addData("Green", color.green());
         telemetry.addData("Alpha", color.alpha());
+    }
+
+    public void colorTelemetry(ColorSensor color, float[] hsvVals)
+    {
         telemetry.addData("HSV", hsvVals);
+        colorTelemetry(color);
     }
 }

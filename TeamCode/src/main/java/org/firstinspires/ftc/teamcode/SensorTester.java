@@ -39,7 +39,7 @@ public class SensorTester extends LinearBase {
             }
 
             telemetry.addData("LED State", ledState);
-            colorTelemetry(front, hsvValuesFront);
+            colorTelemetry(front);
             telemetry.update();
             Thread.sleep(50);
         }

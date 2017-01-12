@@ -10,67 +10,36 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 
 /*
-* TODO:
-* Clean up program
-* Slow mode
-* Swap motor direction button(s)
-**/
-
-/*
 * Controls
-* Right Joystick: Right Motors
-* Left Joystick: Left Motors
-* A: Shoot 1 ball (2 motor rotations)
-* Right Trigger: Collect (not toggled)
-* Left Trigger: Collect Backwards
-* Y: Drive train Slow Mode
-* Dpad Right: Lower ball holder
-* Dpad LeftL: Raise ball holder
+*   Gamepad1:
+*       Y: Toggle Slow Mode
+*       Right Joystick: Right Motor
+*       Left Joystick: Left Motors
 *
+*   Gamepdad2:
+*       A: Spin the Snail Cam (One rotation is a shot)
+*       Right Bumper: Collect inwards
+*       Left Bumpers: Push out balls
 * */
 
 @TeleOp(name="Basic Teleop", group="Teleop")
-
 public class BasicTeleop extends LinearBase {
 
     private final double SLOW_MOD = 0.3; // 30% of normal speed
     private boolean slow = false;
     private boolean press = false;
-    private int newPressTime = 0;
 
     public void runOpMode() throws InterruptedException
     {
 
-        initalize(DcMotor.RunMode.RUN_USING_ENCODER, true);
+        initalize(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         waitForStart();
 
         while(opModeIsActive())
         {
-            /*
-             if(gamepad1.b)
-            {
-                shooter.setPower(-0.75);
-            }
 
-            if(shooter.getCurrentPosition() <= shooter.getTargetPosition()) // make a better system to control the shooter
-            {
-                if(gamepad1.a)
-                {
-                    //shooter.setMode(DcMotor.RunMode.RUN_TO_POSITION); // at some point test how much lag this creates
-
-                    shooter.setTargetPosition(shooter.getCurrentPosition() + (-3395)); // make sure this spins the right way
-                    shooter.setPower(0.9);
-                }
-
-                else
-                {
-                    shooter.setPower(0);
-                }
-            }
-            */
-
-            if(gamepad2.a)
+            if(gamepad2.a) // TODO: Make a better shooting system that allows for one press shoot and reload and manual control
             {
                 shooter.setPower(-0.9);
             }
@@ -105,9 +74,9 @@ public class BasicTeleop extends LinearBase {
             left1.setPower(-1 * gamepad1.left_stick_y * (slow?SLOW_MOD:1));
             left2.setPower(-1 * gamepad1.left_stick_y * (slow?SLOW_MOD:1));
 
-            if(press) // make a better system for this that deosn't prevent use of the joysticks
+            if(press) // TODO: make a better system for this that deosn't prevent use of the joysticks
             {
-                Thread.sleep(200);
+                Thread.sleep(250);
                 press = false;
             }
 
