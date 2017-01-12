@@ -90,7 +90,7 @@ public abstract class LinearBase extends LinearOpMode{
         left1.setMode(defualtRunMode);
 
         collector.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // Make sure to set to run to position once a solution is
 
         //Color Sensor Setup
         front = hardwareMap.colorSensor.get("front");
@@ -359,9 +359,12 @@ public abstract class LinearBase extends LinearOpMode{
 
     public void pressAndTest(double speed, double distanceToWall, int colorWanted) throws InterruptedException
     {
-        final int WAIT_BEFORE_MOVE = 0; // set to something like 4000 because of the time needed before pressing the button again
-        final double MOVE_BACK_DIST = 1440*0.5;
+        final double WAIT_BEFORE_MOVE = 5; // set to something like 4000 because of the time needed before pressing the button again
+        final double MOVE_BACK_DIST = 1440*0.5 * -1;
+        final double SECOND_PRESS_DIST = 1440 * 0.7 * -1;
         final int WAIT_BEFORE_READ = 300;
+
+        front.enableLed(false);
 
         double startTime = getRuntime();
 
@@ -377,18 +380,31 @@ public abstract class LinearBase extends LinearOpMode{
             telemetry.update();
         }
 
+        else if(front.red() == 256 && front.blue() == 256)
+        {
+            telemetry.addData("Error", "Color sensor is fuckn broken again");
+            telemetry.update();
+        }
+
         else if((front.red() > front.blue() && colorWanted == Color.BLUE) || (front.blue() > front.red() && colorWanted == Color.RED))
         {
+
             if(verbose)
             {
                 colorTelemetry(front, hsvValuesFront);
                 telemetry.update();
             }
 
-            while(getRuntime()-pressTime < WAIT_BEFORE_MOVE){sleep(50);} // making sure to wait enough time before pressing again
-
             move(speed, MOVE_BACK_DIST); // move back from wall
-            move(speed, -1*MOVE_BACK_DIST); // move back in, hitting the button
+
+            while(getRuntime()-pressTime < WAIT_BEFORE_MOVE && opModeIsActive()){sleep(50);} // making sure to wait enough time before pressing again
+
+            move(speed, -1*SECOND_PRESS_DIST); // move back in, hitting the button
+        }
+        else if(verbose)
+        {
+                colorTelemetry(front, hsvValuesFront);
+                telemetry.update();
         }
 
         move(speed, distanceToWall); // move back to position started in
@@ -411,8 +427,8 @@ public abstract class LinearBase extends LinearOpMode{
         if(distBeforeShoot != 0)
             move(speed, distBeforeShoot);
 
-        shooter.setPower(0.5);
-        Thread.sleep(500);
+        shooter.setPower(-0.5);
+        Thread.sleep(750);
         shooter.setPower(0);
 
         move(speed, totalDist - distBeforeShoot);
