@@ -24,14 +24,14 @@ public class ShootAndBeaconRed extends LinearBase {
 
         turn(0.45, 45);
 
-        move(MAX_MOVE_SPEED * -1, 1440*2.5);
+        move(MAX_MOVE_SPEED * -1, 1440*4.5);
 
         turn(0.45, -132);
 
-        pressAndTest(MAX_MOVE_SPEED, 1440 * -2.8, Color.BLUE);
+        pressAndTest(0.50, 1440 * -1.0, Color.RED);
 
-        move(-MAX_MOVE_SPEED, 1440*2);
+        move(-MAX_MOVE_SPEED, 1440*4);
 
-        turn(0.45, 80); // DONT FALL OVER ROBOT
+        turn(0.45, -80); // DONT FALL OVER ROBOT
     }
 }
