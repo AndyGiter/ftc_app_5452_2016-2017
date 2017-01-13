@@ -395,7 +395,8 @@ public abstract class LinearBase extends LinearOpMode{
         Thread.sleep(750);
         shooter.setPower(0);
 
-        move(speed, totalDist - distBeforeShoot);
+        if(distBeforeShoot < totalDist)
+            move(speed, totalDist - distBeforeShoot);
     }
 
     public void gyroTelemetry(ModernRoboticsI2cGyro sensorGyro)
