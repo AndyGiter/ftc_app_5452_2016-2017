@@ -81,6 +81,13 @@ public abstract class LinearBase extends LinearOpMode{
         right1.setDirection(DcMotor.Direction.REVERSE);
         right2.setDirection(DcMotor.Direction.REVERSE);
 
+        right1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        Thread.sleep(150);
+
         right1.setMode(defualtRunMode);
         right2.setMode(defualtRunMode);
         left2.setMode(defualtRunMode);
