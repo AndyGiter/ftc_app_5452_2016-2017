@@ -20,18 +20,18 @@ public class ShootAndBeaconBlue extends LinearBase {
 
         front.enableLed(true);
 
-        moveShootMove(-0.75, 1440 * 2, 1440 * 1.5);
+        moveShootMove(-0.75, 1440 * 2, 1440 * 1.5); // shoot
 
-        turn(0.45, -45);
+        turn(0.45, -45); // turn right 45
 
-        move(MAX_MOVE_SPEED * -1, 1440*2.5);
+        move(MAX_MOVE_SPEED * -1, 1440 * 3.3); // the diag
 
-        turn(0.45, 133);
+        turn(0.45, 133); // turn to press the button
 
-        pressAndTest(MAX_MOVE_SPEED, 1440 * -2.8, Color.BLUE);
+        pressAndTest(MAX_MOVE_SPEED, 1440 * -2.35, Color.BLUE); // press
 
-        move(-MAX_MOVE_SPEED, 1440*2);
+        move(-MAX_MOVE_SPEED, 1440*2); // move back to hit the ball
 
-        turn(0.45, 80); // DONT FALL OVER ROBOT
+        turn(0.45, 80); // DONT FALL OVER ROBOT (bump)
     }
 }

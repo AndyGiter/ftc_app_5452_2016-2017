@@ -20,18 +20,18 @@ public class ShootAndBeaconRed extends LinearBase {
 
         front.enableLed(true);
 
-        moveShootMove(-0.75, 1440 * 2, 1440 * 1.5);
+        moveShootMove(-0.75, 1440 * 2, 1440 * 1.5); // shoot
 
         turn(0.45, 45);
 
-        move(MAX_MOVE_SPEED * -1, 1440*4.5);
+        move(MAX_MOVE_SPEED * -1, 1440*4.65); // the diag
 
         turn(0.45, -132);
 
-        pressAndTest(0.50, 1440 * -1.0, Color.RED);
+        pressAndTest(0.50, 1440 * -1.05, Color.RED); // press
 
         move(-MAX_MOVE_SPEED, 1440*4);
 
-        turn(0.45, -80); // DONT FALL OVER ROBOT
+        turn(0.45, -80); // DONT FALL OVER ROBOT (bump)
     }
 }
