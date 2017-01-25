@@ -65,7 +65,48 @@ public class peteboyscoolteleop extends LinearOpMode {
                 right2.setPower(0);
             }
         }
-    }
+        if (gamepad1.dpad_up) {
+            left1.setPower(0.7);
+            left2.setPower(0.7);
+            right1.setPower(0.7);
+            right2.setPower(0.7);
+        }else {
+            left1.setPower(0);
+            left2.setPower(0);
+            right1.setPower(0);
+            right2.setPower(0);
+
+            if (gamepad1.dpad_down) {
+                left1.setPower(-0.7);
+                left2.setPower(-0.7);
+                right1.setPower(-0.7);
+                right2.setPower(-0.7);
+            } else {
+                left1.setPower(0);
+                left2.setPower(0);
+                right1.setPower(0);
+                right2.setPower(0);
+            }
+            if (gamepad1.dpad_left) {
+                left1.setPower(0.8);
+                left2.setPower(0.8);
+                right1.setPower(0.5);
+                right2.setPower(0.5);
+            } else {
+                left1.setPower(0);
+                left2.setPower(0);
+                right1.setPower(0);
+                right2.setPower(0);
+            }
+            if (gamepad1.dpad_right){
+                left1.setPower(0.5);
+                left1.setPower(0.5);
+                right1.setPower(0.8);
+                right2.setPower(0.8);
+            }
+        }
+        }
+
 
     public void initialize() {
         left1 = hardwareMap.dcMotor.get("left1");
