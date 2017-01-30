@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
@@ -25,20 +26,27 @@ import com.qualcomm.robotcore.hardware.Servo;
 * */
 
 @TeleOp(name="Basic Teleop", group="Teleop")
-public class BasicTeleop extends LinearBase {
+public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub didn't work
 
     private final double SLOW_MOD = 0.3; // 30% of normal speed
     private boolean slow = false;
+
     private boolean press = false;
 
-    private DcMotor.RunMode shootMode = DcMotor.RunMode.RUN_TO_POSITION;
+    private boolean reset = false; // for if the shooter motor is currently moving to be reset
+    private boolean ignoreTouch = false; // for if the touch sensor should be ignored
+    private boolean initPos; // This is for if the the snail cam doesnt start in the init position
+
+    private DcMotor.RunMode shootMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
     public void runOpMode() throws InterruptedException
     {
 
-        initalize(DcMotor.RunMode.RUN_USING_ENCODER);
+        initalize(DcMotor.RunMode.RUN_USING_ENCODER); //TODO: Test with DcMotor.RunMode.RUN_WITHOUT_ENCODER
         shooter.setMode(shootMode);
+        initPos = touch.getState();
         waitForStart();
+        Thread.sleep(100);
 
         while(opModeIsActive())
         {
@@ -48,7 +56,9 @@ public class BasicTeleop extends LinearBase {
                 press = true;
             }
 
-             if(shooter.getCurrentPosition() <= shooter.getTargetPosition()) // the inequality is negative because the motor goes backwards
+            // TODO: Maybe make a way to switch back to this incase the button breaks or something, currently broken since motor is reversed
+            /*
+            if(shooter.getCurrentPosition() <= shooter.getTargetPosition()) // the inequality is negative because the motor goes backwards
              {
                 if(gamepad1.a)
                 {
@@ -78,8 +88,45 @@ public class BasicTeleop extends LinearBase {
                     shooter.setPower(0);
                 }
             }
+            */
 
-            if(gamepad1.right_bumper)
+
+
+            if(!initPos && (gamepad1.a || gamepad1.b)) // To reset the shooter to the starting position
+            {
+                shooter.setPower(0.9);
+                initPos = touch.getState();
+            }
+
+            else if(!initPos)
+            {
+                shooter.setPower(0);
+                initPos = touch.getState();
+            }
+
+            else
+            {
+                if (ignoreTouch && reset && !touch.getState()) // TODO: Make sure these are in the best order
+                {
+                    ignoreTouch = false;
+                }
+
+                else if (!ignoreTouch && reset && touch.getState())
+                {
+                    reset = false;
+                    shooter.setPower(0);
+                }
+
+                else if (touch.getState() && gamepad1.a && !reset && !ignoreTouch)
+                {
+                    ignoreTouch = true;
+                    reset = true;
+
+                    shooter.setPower(0.8);
+                }
+            }
+
+            if(gamepad1.right_bumper) // TODO: Look into triggers
             {
                 collector.setPower(-0.9);
             }
@@ -107,9 +154,11 @@ public class BasicTeleop extends LinearBase {
             telemetry.addData("Is slow mode on", slow);
             if(verbose)
             {
-                telemetry.addData("Shooter is busy?", shooter.isBusy());
-                telemetry.addData("Current Shooter Pos", shooter.getCurrentPosition());
-                telemetry.addData("Shooter Target Pos", shooter.getTargetPosition());
+                telemetry.addData("InitPos", initPos);
+                telemetry.addData("IgnoreTouch", ignoreTouch);
+                telemetry.addData("Reset", reset);
+                telemetry.addData("A button", gamepad1.a);
+                telemetry.addData("Button State", touch.getState());
             }
             telemetry.update();
 
