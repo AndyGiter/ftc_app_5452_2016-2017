@@ -10,6 +10,9 @@ import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 
  // Moving parts
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.Servo;
 
  // Misc.
@@ -43,6 +46,8 @@ public abstract class LinearBase extends LinearOpMode{
 
     ColorSensor front;
 
+    DigitalChannel touch;
+
     private I2cAddr i2cAddrFront = I2cAddr.create8bit(0x4c);
 
     float hsvValuesFront[]    = {0F, 0F, 0F};
@@ -65,9 +70,13 @@ public abstract class LinearBase extends LinearOpMode{
         double start = getRuntime();
         if(verbose){telemetry.addData("Done: ","Starting init"); telemetry.update();}
 
-        //Gyro (this comes first so we can do other things, like initalizing other things, while this calibrates.)
+        // Gyro (this comes first so we can do other things, like initalizing other things, while this calibrates.)
         gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("gyro");
         gyro.calibrate();
+
+        // Touch Sensor Setup
+        touch = hardwareMap.get(DigitalChannel.class, "touch"); // touch.getState() gets the state
+        touch.setMode(DigitalChannelController.Mode.INPUT);
 
         // Motor Setup
         left1  = hardwareMap.dcMotor.get("left1");
@@ -95,6 +104,8 @@ public abstract class LinearBase extends LinearOpMode{
 
         collector.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        shooter.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //Color Sensor Setup
         front = hardwareMap.colorSensor.get("front");
@@ -351,7 +362,7 @@ public abstract class LinearBase extends LinearOpMode{
             telemetry.update();
         }
 
-        else if(front.red() == 256 && front.blue() == 256)
+        else if(front.red() == 255 && front.blue() == 255)
         {
             telemetry.addData("Error", "Color sensor is fuckn broken again");
             telemetry.update();
@@ -388,7 +399,7 @@ public abstract class LinearBase extends LinearOpMode{
 
     public void shoot() throws InterruptedException // TODO: Make this better (so it resets but without wasting time)
     {
-        shooter.setPower(-0.5);
+        shooter.setPower(0.5);
         Thread.sleep(500);
         shooter.setPower(0);
     }
@@ -398,7 +409,7 @@ public abstract class LinearBase extends LinearOpMode{
         if(distBeforeShoot != 0)
             move(speed, distBeforeShoot);
 
-        shooter.setPower(-0.5);
+        shooter.setPower(0.5);
         Thread.sleep(750);
         shooter.setPower(0);
 
