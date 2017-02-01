@@ -25,7 +25,9 @@ public class JoshsPressandTest extends LinearOpMode {
 
     DcMotor right2;
 
-    ColorSensor colorSensor1;
+    ColorSensor Sensei;
+
+    private I2cAddr i2cAddrSensei = I2cAddr.create8bit(0x4c);
 
     public void runOpMode() throws InterruptedException{
 
@@ -36,26 +38,32 @@ public class JoshsPressandTest extends LinearOpMode {
         right1 = hardwareMap.dcMotor.get("right1");
         right2 = hardwareMap.dcMotor.get("right2");
 
-        colorSensor1 = hardwareMap.colorSensor.get("front");
+        Sensei = hardwareMap.colorSensor.get("sensei");
 
-        colorSensor1.setI2cAddress(I2cAddr);
+        Sensei.setI2cAddress(i2cAddrSensei);
 
-        left1.setTargetPosition(30000);
-        right1.setTargetPosition(30000);
-        left2.setTargetPosition(30000);
-        right2.setTargetPosition(30000);
+        left1.setPower(0.7);
+        right1.setPower(0.7);
+        left2.setPower(0.7);
+        right2.setPower(0.7);
+        sleep(3000);
 
-        if (colorSensor1.blue();
-        left1.setTargetPosition(3000);
-        right1.setTargetPosition(3000);
-        left2.setTargetPosition(3000);
-        right2.setTargetPosition(3000);
+        if (Sensei.blue() > Sensei.red())
+        {
+            left1.setPower(0.7);
+            right1.setPower(0.7);
+            left2.setPower(0.7);
+            right2.setPower(0.7);
+            sleep(2000);
+        }
 
-        if (colorSensor1.red();
-        left1.setTargetPosition(0);
-        right1.setTargetPosition(0);
-        left2.setTargetPosition(0);
-        right2.setTargetPosition(0);
+        else if(Sensei.blue() < Sensei.red())
+        {
+            left1.setPower(0);
+            right1.setPower(0);
+            left2.setPower(0);
+            right2.setPower(0);
+        }
 
 
 
