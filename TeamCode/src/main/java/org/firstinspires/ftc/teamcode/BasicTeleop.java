@@ -38,11 +38,12 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
     private boolean initPos; // This is for if the the snail cam doesnt start in the init position
 
     private DcMotor.RunMode shootMode = DcMotor.RunMode.RUN_USING_ENCODER;
+    private DcMotor.RunMode driveMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
     public void runOpMode() throws InterruptedException
     {
 
-        initalize(DcMotor.RunMode.RUN_USING_ENCODER); //TODO: Test with DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        initalize(driveMode); //TODO: Test with DcMotor.RunMode.RUN_WITHOUT_ENCODER
         shooter.setMode(shootMode);
         initPos = touch.getState();
         waitForStart();
@@ -54,6 +55,25 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
             {
                 verbose = !verbose;
                 press = true;
+            }
+
+            if(gamepad1.dpad_down && driveMode == DcMotor.RunMode.RUN_USING_ENCODER)
+            {
+                driveMode = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
+
+                right1.setMode(driveMode);
+                right2.setMode(driveMode);
+                left2.setMode(driveMode);
+                left1.setMode(driveMode);
+            }
+            else if(gamepad1.dpad_up && driveMode == DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+            {
+                driveMode = DcMotor.RunMode.RUN_USING_ENCODER;
+
+                right1.setMode(driveMode);
+                right2.setMode(driveMode);
+                left2.setMode(driveMode);
+                left1.setMode(driveMode);
             }
 
             // TODO: Maybe make a way to switch back to this incase the button breaks or something, currently broken since motor is reversed
