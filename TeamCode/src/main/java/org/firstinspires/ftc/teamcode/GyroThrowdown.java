@@ -51,7 +51,7 @@ public class GyroThrowdown extends LinearBase {
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000); // Make sure this is in the right spot
         Thread.sleep(100);
 
-        turn(0.45, 90);
+        turnG(0.45, 90);
 
         while(opModeIsActive())
         {
@@ -62,8 +62,7 @@ public class GyroThrowdown extends LinearBase {
 
     }
 
-    @Override
-    public void turn(double maxSpeed, int deg) throws InterruptedException
+    public void turnG(double maxSpeed, int deg) throws InterruptedException
     {
         final int TURN_RANGE = 6;
         int targetHeading = gyro.getIntegratedZValue() + deg;
@@ -78,6 +77,69 @@ public class GyroThrowdown extends LinearBase {
 
         // While the gyro is not within the range (TURN_RANGE)
         while(!(gyro.getIntegratedZValue() <= targetHeading+(TURN_RANGE/2.0) && gyro.getIntegratedZValue() >= targetHeading-(TURN_RANGE/2.0)) && opModeIsActive())
+        {
+
+            if(gyro.getIntegratedZValue() > targetHeading) // Right turn
+            {
+                left1.setPower(maxSpeed);
+                left2.setPower(maxSpeed);
+                right1.setPower(-1 * maxSpeed);
+                right2.setPower(-1 * maxSpeed);
+            }
+
+            else //then its a left turn
+            {
+                left1.setPower(-1 * maxSpeed);
+                left2.setPower(-1 * maxSpeed);
+                right1.setPower(maxSpeed);
+                right2.setPower(maxSpeed);
+            }
+
+            if(verbose)
+            {
+                telemetry.addData("Gyro target: ", targetHeading+"");
+                telemetry.addData("Gyro heading: ", gyro.getIntegratedZValue()+"");
+                telemetry.addData("IMU heading: ", getStringHeading());
+                telemetry.addData("Robot speed: ", maxSpeed+"");
+                telemetry.update();
+            }
+        }
+
+        right1.setPower(0);
+        right2.setPower(0);
+        left1.setPower(0);
+        left2.setPower(0);
+
+        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) // last thing to do
+        {
+            right1.setMode(defualtRunMode);
+            right2.setMode(defualtRunMode);
+            left2.setMode(defualtRunMode);
+            left1.setMode(defualtRunMode);
+        }
+
+        Thread.sleep(300);
+
+        if(verbose){telemetry.addData("Done: ", "Turning. " + deg + " deg. Heading: " + gyro.getIntegratedZValue()); telemetry.update();}
+
+    }
+
+    // Make sure that negative is still right and if not change all the code i guess idk.
+    public void turnIMU(double maxSpeed, int deg) throws InterruptedException
+    {
+        final int TURN_RANGE = 6;
+        int targetHeading = gyro.getIntegratedZValue() + deg;
+
+        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
+        {
+            right1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            right2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            left2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            left1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+
+        // While the gyro is not within the range (TURN_RANGE)
+        while(!(getHeading() <= targetHeading+(TURN_RANGE/2.0) && getHeading() >= targetHeading-(TURN_RANGE/2.0)) && opModeIsActive())
         {
 
             if(gyro.getIntegratedZValue() > targetHeading) // Right turn
