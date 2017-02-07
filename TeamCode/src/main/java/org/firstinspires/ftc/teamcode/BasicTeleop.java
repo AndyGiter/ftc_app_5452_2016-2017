@@ -57,28 +57,7 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
                 press = true;
             }
 
-            if(gamepad1.dpad_down && driveMode == DcMotor.RunMode.RUN_USING_ENCODER)
-            {
-                driveMode = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
-
-                right1.setMode(driveMode);
-                right2.setMode(driveMode);
-                left2.setMode(driveMode);
-                left1.setMode(driveMode);
-            }
-            else if(gamepad1.dpad_up && driveMode == DcMotor.RunMode.RUN_WITHOUT_ENCODER)
-            {
-                driveMode = DcMotor.RunMode.RUN_USING_ENCODER;
-
-                right1.setMode(driveMode);
-                right2.setMode(driveMode);
-                left2.setMode(driveMode);
-                left1.setMode(driveMode);
-            }
-
-            // TODO: Maybe make a way to switch back to this incase the button breaks or something, currently broken since motor is reversed
-            /*
-            if(shooter.getCurrentPosition() <= shooter.getTargetPosition()) // the inequality is negative because the motor goes backwards
+            if(shooter.getCurrentPosition() >= shooter.getTargetPosition()) // the inequality is negative because the motor goes backwards
              {
                 if(gamepad1.a)
                 {
@@ -88,8 +67,8 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
                         shooter.setMode(shootMode);
                     }
 
-                    shooter.setTargetPosition(shooter.getCurrentPosition() + (-3390));
-                    shooter.setPower(-0.9);
+                    shooter.setTargetPosition(shooter.getCurrentPosition() + (3390));
+                    shooter.setPower(0.9);
                 }
 
                 else if(gamepad1.b)
@@ -100,49 +79,12 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
                         shooter.setMode(shootMode);
                     }
 
-                    shooter.setPower(-0.9);
+                    shooter.setPower(0.9);
                 }
 
                 else
                 {
                     shooter.setPower(0);
-                }
-            }
-            */
-
-
-
-            if(!initPos && (gamepad1.a || gamepad1.b)) // To reset the shooter to the starting position
-            {
-                shooter.setPower(0.9);
-                initPos = touch.getState();
-            }
-
-            else if(!initPos)
-            {
-                shooter.setPower(0);
-                initPos = touch.getState();
-            }
-
-            else
-            {
-                if (ignoreTouch && reset && !touch.getState()) // TODO: Make sure these are in the best order
-                {
-                    ignoreTouch = false;
-                }
-
-                else if (!ignoreTouch && reset && touch.getState())
-                {
-                    reset = false;
-                    shooter.setPower(0);
-                }
-
-                else if (touch.getState() && gamepad1.a && !reset && !ignoreTouch)
-                {
-                    ignoreTouch = true;
-                    reset = true;
-
-                    shooter.setPower(0.8);
                 }
             }
 
@@ -174,15 +116,15 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
             telemetry.addData("Is slow mode on", slow);
             if(verbose)
             {
-                telemetry.addData("InitPos", initPos);
-                telemetry.addData("IgnoreTouch", ignoreTouch);
-                telemetry.addData("Reset", reset);
+                telemetry.addData("Shooter is busy?", shooter.isBusy());
+                telemetry.addData("Current Shooter Pos", shooter.getCurrentPosition());
+                telemetry.addData("Shooter Target Pos", shooter.getTargetPosition());
                 telemetry.addData("A button", gamepad1.a);
                 telemetry.addData("Button State", touch.getState());
             }
             telemetry.update();
 
-            if(press) // TODO: make a better system for this that deosn't prevent use of the joysticks
+            if(press) // TODO: make a better system for this that deosn't prevent use of the joysticks Threading?
             {
                 Thread.sleep(250);
                 press = false;
