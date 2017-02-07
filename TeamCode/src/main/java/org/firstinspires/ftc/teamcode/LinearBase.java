@@ -65,6 +65,8 @@ public abstract class LinearBase extends LinearOpMode{
     final double MAX_MOVE_SPEED = 0.8;
     final double MAX_TURN_SPEED = 0.45;
 
+    public boolean running = false; // for if the shoot thread is running
+
     public void initalize() throws InterruptedException
     {
         double start = getRuntime();
@@ -339,6 +341,8 @@ public abstract class LinearBase extends LinearOpMode{
 
     }
 
+
+
     public void pressAndTest(double speed, double distanceToWall, int colorWanted) throws InterruptedException
     {
         final double WAIT_BEFORE_MOVE = 5; // TODO: Test to see what the smallest value for this is
@@ -402,6 +406,30 @@ public abstract class LinearBase extends LinearOpMode{
         shooter.setPower(0.5);
         Thread.sleep(500);
         shooter.setPower(0);
+    }
+
+    public void shootThreaded() // needs to be tested
+    {
+        final int WAIT_TIME = 200; // in miliseconds
+
+        if(!running)
+        {
+            new Thread(new Runnable() {
+                public void run() {
+                    running = true;
+
+                    shooter.setPower(0.9);
+
+                    sleep(WAIT_TIME);
+
+                    while(!touch.getState()){}
+
+                    shooter.setPower(0);
+
+                    running = false;
+                }
+            }).start();
+        }
     }
 
     public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException // TODO: Make this better (so it resets but without wasting time)
