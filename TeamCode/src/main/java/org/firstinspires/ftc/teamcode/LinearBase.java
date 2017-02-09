@@ -410,8 +410,6 @@ public abstract class LinearBase extends LinearOpMode{
 
     public void shootThreaded() // needs to be tested
     {
-        final int WAIT_TIME = 200; // in miliseconds
-
         if(!running)
         {
             new Thread(new Runnable() {
@@ -420,7 +418,7 @@ public abstract class LinearBase extends LinearOpMode{
 
                     shooter.setPower(0.9);
 
-                    sleep(WAIT_TIME);
+                    while(touch.getState()){}
 
                     while(!touch.getState()){}
 
@@ -432,14 +430,12 @@ public abstract class LinearBase extends LinearOpMode{
         }
     }
 
-    public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException // TODO: Make this better (so it resets but without wasting time)
+    public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
     {
         if(distBeforeShoot != 0)
             move(speed, distBeforeShoot);
 
-        shooter.setPower(0.5);
-        Thread.sleep(750);
-        shooter.setPower(0);
+        shootThreaded();
 
         if(distBeforeShoot < totalDist)
             move(speed, totalDist - distBeforeShoot);
