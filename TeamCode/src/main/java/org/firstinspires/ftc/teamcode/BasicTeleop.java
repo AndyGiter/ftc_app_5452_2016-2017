@@ -8,24 +8,13 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 /**
  * Created by mlowery2 on 9/21/2016.
+ *
+ * This is the tele op program for team 5452
+ *
+ * TODO: Add control comment (maybe wait untill the end of the year(
  */
 
-/*
-* Controls
-*   Gamepad1:
-*       Y: Toggle Slow Mode
-*       Right Joystick: Right Motor
-*       Left Joystick: Left Motors
-*       Start: Toggle Logging
-*
-*   Gamepdad2:
-*       A: Spin the Snail Cam (One rotation is a shot)
-*       Right Bumper: Collect inwards
-*       Left Bumpers: Push out balls
-*       Start: Toggle Logging
-* */
-
-@TeleOp(name="Basic Teleop", group="Teleop")
+@TeleOp(name="New Teleop", group="Teleop")
 public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub didn't work
 
     private final double SLOW_MOD = 0.3; // 30% of normal speed
@@ -33,19 +22,11 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
 
     private boolean press = false;
 
-    private boolean reset = false; // for if the shooter motor is currently moving to be reset
-    private boolean ignoreTouch = false; // for if the touch sensor should be ignored
-    private boolean initPos; // This is for if the the snail cam doesnt start in the init position
-
-    private DcMotor.RunMode shootMode = DcMotor.RunMode.RUN_USING_ENCODER;
-    private DcMotor.RunMode driveMode = DcMotor.RunMode.RUN_USING_ENCODER;
-
     public void runOpMode() throws InterruptedException
     {
 
-        initalize(driveMode); //TODO: Test with DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        shooter.setMode(shootMode);
-        initPos = touch.getState();
+        initalize(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         waitForStart();
         Thread.sleep(100);
 
@@ -57,38 +38,12 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
                 press = true;
             }
 
-            if(shooter.getCurrentPosition() >= shooter.getTargetPosition()) // the inequality is negative because the motor goes backwards
-             {
-                if(gamepad1.a)
-                {
-                    if(shootMode != DcMotor.RunMode.RUN_TO_POSITION)
-                    {
-                        shootMode = DcMotor.RunMode.RUN_TO_POSITION;
-                        shooter.setMode(shootMode);
-                    }
-
-                    shooter.setTargetPosition(shooter.getCurrentPosition() + (3390));
-                    shooter.setPower(0.9);
-                }
-
-                else if(gamepad1.b)
-                {
-                    if(shootMode != DcMotor.RunMode.RUN_USING_ENCODER)
-                    {
-                        shootMode = DcMotor.RunMode.RUN_USING_ENCODER;
-                        shooter.setMode(shootMode);
-                    }
-
-                    shooter.setPower(0.9);
-                }
-
-                else
-                {
-                    shooter.setPower(0);
-                }
+            if(gamepad1.a)
+            {
+                shootThreaded();
             }
 
-            if(gamepad1.right_bumper) // TODO: Look into triggers
+            if(gamepad1.right_bumper)
             {
                 collector.setPower(-0.9);
             }
@@ -108,6 +63,8 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
                 press = true;
             }
 
+
+
             right1.setPower(-1 * gamepad1.right_stick_y * (slow?SLOW_MOD:1));
             right2.setPower(-1 * gamepad1.right_stick_y * (slow?SLOW_MOD:1));
             left1.setPower(-1 * gamepad1.left_stick_y * (slow?SLOW_MOD:1));
@@ -121,6 +78,7 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
                 telemetry.addData("Shooter Target Pos", shooter.getTargetPosition());
                 telemetry.addData("A button", gamepad1.a);
                 telemetry.addData("Button State", touch.getState());
+                telemetry.addData("Running", running);
             }
             telemetry.update();
 
