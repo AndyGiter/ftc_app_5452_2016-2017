@@ -12,7 +12,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 @Autonomous(name = "Shoot and Beacon, BLUE SIDE", group ="auto")
 public class ShootAndBeaconBlue extends LinearBase {
 
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() throws InterruptedException
+    {
         initalize(DcMotor.RunMode.RUN_TO_POSITION, true);
         waitForStart();
         Thread.sleep(100);

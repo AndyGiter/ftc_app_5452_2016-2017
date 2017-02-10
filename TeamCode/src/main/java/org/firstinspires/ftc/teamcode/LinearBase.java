@@ -373,7 +373,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         else if(front.red() == 255 && front.blue() == 255)
         {
-            telemetry.addData("Error", "Color sensor is fuckn broken again");
+            telemetry.addData("Error", "Color sensor is broken again");
             telemetry.update();
         }
 
