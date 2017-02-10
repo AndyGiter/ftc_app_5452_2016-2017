@@ -280,10 +280,12 @@ public abstract class LinearBase extends LinearOpMode{
      * Negative deg value turns right
      * Positive is left
      */
-    public void turn(double maxSpeed, int deg) throws InterruptedException
+    public void turn(double maxSpeed, double deg) throws InterruptedException
     {
-        final int TURN_RANGE = 6;
-        int targetHeading = gyro.getIntegratedZValue() + deg;
+        final int TURN_RANGE = 2;
+        final double MIN_SPEED = 0.01;
+        double targetHeading = gyro.getIntegratedZValue() + deg;
+        double speed = maxSpeed;
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
         {
@@ -296,28 +298,31 @@ public abstract class LinearBase extends LinearOpMode{
         // While the gyro is not within the range (TURN_RANGE)
         while(!(gyro.getIntegratedZValue() <= targetHeading+(TURN_RANGE/2.0) && gyro.getIntegratedZValue() >= targetHeading-(TURN_RANGE/2.0)) && opModeIsActive())
         {
+            speed = Range.clip(maxSpeed*Math.abs((gyro.getIntegratedZValue()-targetHeading)/deg), MIN_SPEED, maxSpeed);
 
             if(gyro.getIntegratedZValue() > targetHeading) // Right turn
             {
-                left1.setPower(maxSpeed);
-                left2.setPower(maxSpeed);
-                right1.setPower(-1 * maxSpeed);
-                right2.setPower(-1 * maxSpeed);
+                left1.setPower(speed);
+                left2.setPower(speed);
+                right1.setPower(-1 * speed);
+                right2.setPower(-1 * speed);
             }
 
             else //then its a left turn
             {
-                left1.setPower(-1 * maxSpeed);
-                left2.setPower(-1 * maxSpeed);
-                right1.setPower(maxSpeed);
-                right2.setPower(maxSpeed);
+
+                left1.setPower(-1 * speed);
+                left2.setPower(-1 * speed);
+                right1.setPower(speed);
+                right2.setPower(speed);
             }
 
             if(verbose)
             {
                 telemetry.addData("Gyro target: ", targetHeading+"");
                 telemetry.addData("Gyro heading: ", gyro.getIntegratedZValue()+"");
-                telemetry.addData("Robot speed: ", maxSpeed+"");
+                telemetry.addData("Robot Max speed: ", maxSpeed+"");
+                telemetry.addData("Robot speed: ", speed+"");
                 telemetry.update();
             }
         }
@@ -337,7 +342,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         Thread.sleep(300);
 
-        if(verbose){telemetry.addData("Done: ", "Turning. " + deg + " deg. Heading: " + gyro.getIntegratedZValue()); telemetry.update();}
+        if(verbose){telemetry.addData("Done: ", "Turning. " + deg + " deg. Heading: " + gyro.getIntegratedZValue() + " Target Heading: "+targetHeading); telemetry.update();}
 
     }
 
@@ -418,9 +423,9 @@ public abstract class LinearBase extends LinearOpMode{
 
                     shooter.setPower(0.9);
 
-                    while(touch.getState()){}
+                    while(touch.getState() && opModeIsActive()){}
 
-                    while(!touch.getState()){}
+                    while(!touch.getState() && opModeIsActive()){}
 
                     shooter.setPower(0);
 
@@ -436,6 +441,8 @@ public abstract class LinearBase extends LinearOpMode{
             move(speed, distBeforeShoot);
 
         shootThreaded();
+
+        Thread.sleep(250); // time for it to shoot
 
         if(distBeforeShoot < totalDist)
             move(speed, totalDist - distBeforeShoot);
