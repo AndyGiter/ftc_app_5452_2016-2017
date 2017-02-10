@@ -12,26 +12,26 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 @Autonomous(name = "Shoot and Beacon, BLUE SIDE", group ="auto")
 public class ShootAndBeaconBlue extends LinearBase {
 
-    public void runOpMode() throws InterruptedException
-    {
+    public void runOpMode() throws InterruptedException {
         initalize(DcMotor.RunMode.RUN_TO_POSITION, true);
         waitForStart();
         Thread.sleep(100);
 
         front.enableLed(true);
 
-        moveShootMove(-0.75, 1440 * 2, 1440 * 1.5); // shoot
+        moveShootMove(-0.75, 1440 * 2, 1440 * 1.9); // shoot
 
-        turn(0.45, -45); // turn right 45
+        turn(1, -45); // turn right 45
 
-        move(MAX_MOVE_SPEED * -1, 1440 * 3.3); // the diag
+        move(MAX_MOVE_SPEED * -1, 1440 * 3.4); // the diag
 
-        turn(0.45, 133); // turn to press the button
+        turn(1, 134); // turn to press the button
 
-        pressAndTest(MAX_MOVE_SPEED, 1440 * -2.35, Color.BLUE); // press
+        pressAndTest(MAX_MOVE_SPEED, 1440 * -2.0, Color.BLUE); // press
 
-        move(-MAX_MOVE_SPEED, 1440*2); // move back to hit the ball
+        move(-MAX_MOVE_SPEED, 1440 * 2); // move back to hit the ball
 
         turn(0.45, 80); // DONT FALL OVER ROBOT (bump)
+
     }
 }
