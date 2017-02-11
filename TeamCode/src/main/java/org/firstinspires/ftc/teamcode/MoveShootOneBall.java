@@ -15,10 +15,10 @@ public class MoveShootOneBall extends LinearBase {
         waitForStart();
         Thread.sleep(100);
 
-        moveShootMove(-0.75, 1440 * 1.5, 1440*1.5);
+        moveShootMove(-0.75, 1440 * 3, 1440 * 3);
 
         Thread.sleep(10000);
 
-        turn(0.3, 180);
+        turn(1, 180);
     }
 }

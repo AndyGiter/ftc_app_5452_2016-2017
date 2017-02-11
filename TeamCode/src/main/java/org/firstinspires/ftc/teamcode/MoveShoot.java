@@ -14,10 +14,10 @@ public class MoveShoot extends LinearBase {
         waitForStart();
         Thread.sleep(100);
 
-        moveShootMove(-0.75, 1440 * 3, 1440*3.0);
+        moveShootMove(-0.75, 1440 * 3.5, 1440*3.5);
 
         Thread.sleep(10000);
 
-        turn(0.3, 180);
+        turn(1, 180);
     }
 }

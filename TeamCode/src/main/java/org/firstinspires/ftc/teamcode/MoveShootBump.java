@@ -14,9 +14,9 @@ public class MoveShootBump extends LinearBase {
         waitForStart();
         Thread.sleep(100);
 
-        moveShootMove(-0.75, 1440 * 3, 1440 * 3.0);
+        moveShootMove(-0.75, 1440 * 3.5, 1440*3.5);
 
-        Thread.sleep(17500); // to give allys time to move
+        Thread.sleep(17500); // to give allies time to move
 
         move(-1 * MAX_MOVE_SPEED, 1440 * 3);
     }

@@ -298,7 +298,9 @@ public abstract class LinearBase extends LinearOpMode{
         // While the gyro is not within the range (TURN_RANGE)
         while(!(gyro.getIntegratedZValue() <= targetHeading+(TURN_RANGE/2.0) && gyro.getIntegratedZValue() >= targetHeading-(TURN_RANGE/2.0)) && opModeIsActive())
         {
-            speed = Range.clip(maxSpeed*Math.abs((gyro.getIntegratedZValue()-targetHeading)/deg), MIN_SPEED, maxSpeed);
+            //if(Math.abs(targetHeading - gyro.getIntegratedZValue()) <= 45)
+
+            speed = Range.clip(maxSpeed * Math.abs((gyro.getIntegratedZValue() - targetHeading) / deg), MIN_SPEED, maxSpeed);
 
             if(gyro.getIntegratedZValue() > targetHeading) // Right turn
             {
@@ -359,7 +361,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         double startTime = getRuntime();
 
-        move(speed, -1 * distanceToWall); // move twords wall
+        move(speed, -1 * distanceToWall); // move into beacon
 
         double pressTime = getRuntime();
 
@@ -406,7 +408,7 @@ public abstract class LinearBase extends LinearOpMode{
 
     }
 
-    public void shoot() throws InterruptedException // TODO: Make this better (so it resets but without wasting time)
+    public void shoot() throws InterruptedException
     {
         shooter.setPower(0.5);
         Thread.sleep(500);
