@@ -1,32 +1,29 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 
 /**
  * Created by mlowery2 on 9/21/2016.
  *
  * This is the tele op program for team 5452
  *
- * TODO: Add control comment (maybe wait untill the end of the year(
+ * TODO: Add control comment (maybe wait until the end of the year)
  */
 
 @TeleOp(name="New Teleop", group="Teleop")
 public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub didn't work
 
-    private final double SLOW_MOD = 0.3; // 30% of normal speed
+    private final double SLOW_MOD = 0.3; // 30% of normal speed TODO: Retest for new drive train and maybe new controls
     private boolean slow = false;
 
     private boolean press = false;
+    private final int PRESS_TIME = 250;
 
     public void runOpMode() throws InterruptedException
     {
 
         initalize(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         waitForStart();
         Thread.sleep(100);
 
@@ -63,8 +60,6 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
                 press = true;
             }
 
-
-
             right1.setPower(-1 * gamepad1.right_stick_y * (slow?SLOW_MOD:1));
             right2.setPower(-1 * gamepad1.right_stick_y * (slow?SLOW_MOD:1));
             left1.setPower(-1 * gamepad1.left_stick_y * (slow?SLOW_MOD:1));
@@ -82,9 +77,9 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
             }
             telemetry.update();
 
-            if(press) // TODO: make a better system for this that deosn't prevent use of the joysticks Threading?
+            if(press) // TODO: make a better system for this that doesn't prevent use of the joysticks. Threading?
             {
-                Thread.sleep(250);
+                Thread.sleep(PRESS_TIME);
                 press = false;
             }
         }

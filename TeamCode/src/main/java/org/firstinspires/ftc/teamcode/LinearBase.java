@@ -50,11 +50,7 @@ public abstract class LinearBase extends LinearOpMode{
 
     private I2cAddr i2cAddrFront = I2cAddr.create8bit(0x4c);
 
-    float hsvValuesFront[]    = {0F, 0F, 0F};
-
     ModernRoboticsI2cGyro gyro; // Default I2C address 0x20
-
-    enum Direction {LEFT, RIGHT, FORWARD, BACKWARD};
 
     DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
@@ -62,15 +58,18 @@ public abstract class LinearBase extends LinearOpMode{
 
     boolean verbose = false;
 
-    final double MAX_MOVE_SPEED = 0.8;
-    final double MAX_TURN_SPEED = 0.45;
+    final double MAX_MOVE_SPEED = 0.8; // YEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHH
+    final double MAX_TURN_SPEED = 1; // You spin me right round baby, right round
+
+    final int END_WAIT = 200;
 
     public boolean running = false; // for if the shoot thread is running
 
     public void initalize() throws InterruptedException
     {
         double start = getRuntime();
-        if(verbose){telemetry.addData("Done: ","Starting init"); telemetry.update();}
+
+        telemetry.addData("Done: ","Starting init"); telemetry.update();
 
         // Gyro (this comes first so we can do other things, like initalizing other things, while this calibrates.)
         gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("gyro");
@@ -86,7 +85,7 @@ public abstract class LinearBase extends LinearOpMode{
         right1 = hardwareMap.dcMotor.get("right1");
         right2 = hardwareMap.dcMotor.get("right2");
 
-        shooter = hardwareMap.dcMotor.get("snail"); // TODO: Set this to be reversed and fix all the code that is broken because of that
+        shooter = hardwareMap.dcMotor.get("snail");
         collector = hardwareMap.dcMotor.get("feed");
 
         right1.setDirection(DcMotor.Direction.REVERSE);
@@ -132,7 +131,6 @@ public abstract class LinearBase extends LinearOpMode{
         else{telemetry.addData("Done", "Initalizing"); telemetry.update();}
 
         front.enableLed(false);
-
     }
 
     public void initalize(DcMotor.RunMode newDefualtRunMode) throws InterruptedException
@@ -153,7 +151,7 @@ public abstract class LinearBase extends LinearOpMode{
         initalize();
     }
 
-    public void move(double speed, double distance) throws InterruptedException // TODO: Integrate the gyro somehow
+    public void move(double speed, double distance) throws InterruptedException
     {
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
         {
@@ -202,77 +200,17 @@ public abstract class LinearBase extends LinearOpMode{
             left1.setMode(defualtRunMode);
         }
 
-        Thread.sleep(300);
+        Thread.sleep(END_WAIT);
     }
 
-    // This is just kept around as a brute force turning method if anything goes down
-    @Deprecated
-    public void turn(double speed, double distance, Direction d) throws InterruptedException
+    /*
+    * This is just a function to drive the robot along the wall while keeping a distance from it using the range sensor
+    * */
+    public void moveRange(double speed, double moveDist)
     {
-        if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
-        {
-            right1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            right2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            left2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            left1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        }
+        final double MAX_WALL_DIST = 17; // TODO: Test this, the measurement is in cm
+        final double MIN_WALL_DIST = 5; // TODO: Test this, the measurement is in cm
 
-        if(d == Direction.RIGHT) // if we want to turn right
-        {
-            right1.setTargetPosition((int) (right1.getCurrentPosition() + -1*distance));
-            right2.setTargetPosition((int) (right2.getCurrentPosition() + -1*distance));
-            left1.setTargetPosition((int) (left1.getCurrentPosition() + distance));
-            left2.setTargetPosition((int) (left2.getCurrentPosition() + distance));
-
-            right1.setPower(-1*speed);
-            right2.setPower(-1*speed);
-            left1.setPower(speed);
-            left2.setPower(speed);
-        }
-
-        else if(d == Direction.LEFT)
-        {
-            right1.setTargetPosition((int) (right1.getCurrentPosition() + distance));
-            right2.setTargetPosition((int) (right2.getCurrentPosition() + distance));
-            left1.setTargetPosition((int) (left1.getCurrentPosition() + -1*distance));
-            left2.setTargetPosition((int) (left2.getCurrentPosition() + -1*distance));
-
-            right1.setPower(speed);
-            right2.setPower(speed);
-            left1.setPower(-1 * speed);
-            left2.setPower(-1 * speed);
-
-        }
-
-        else
-        {
-            telemetry.addData("Error", "Bad input, must be left or right");
-            telemetry.update();
-            return;
-        }
-
-        while(opModeIsActive() && right1.isBusy() &&
-                                  right2.isBusy() &&
-                                  left1.isBusy()  &&
-                                  left2.isBusy()){
-            Thread.sleep(50);
-
-        }
-
-        right1.setPower(0);
-        right2.setPower(0);
-        left1.setPower(0);
-        left2.setPower(0);
-
-        if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION) // last thing to do
-        {
-            right1.setMode(defualtRunMode);
-            right2.setMode(defualtRunMode);
-            left2.setMode(defualtRunMode);
-            left1.setMode(defualtRunMode);
-        }
-
-        Thread.sleep(300);
     }
 
     /*
@@ -342,13 +280,11 @@ public abstract class LinearBase extends LinearOpMode{
             left1.setMode(defualtRunMode);
         }
 
-        Thread.sleep(300);
+        if (verbose) {
+            telemetry.addData("Done: ", "Turning. " + deg + " deg. Heading: " + gyro.getIntegratedZValue() + " Target Heading: "+targetHeading); telemetry.update();}
 
-        if(verbose){telemetry.addData("Done: ", "Turning. " + deg + " deg. Heading: " + gyro.getIntegratedZValue() + " Target Heading: "+targetHeading); telemetry.update();}
-
+        Thread.sleep(END_WAIT);
     }
-
-
 
     public void pressAndTest(double speed, double distanceToWall, int colorWanted) throws InterruptedException
     {
@@ -358,8 +294,6 @@ public abstract class LinearBase extends LinearOpMode{
         final int WAIT_BEFORE_READ = 300;
 
         front.enableLed(false);
-
-        double startTime = getRuntime();
 
         move(speed, -1 * distanceToWall); // move into beacon
 
@@ -384,7 +318,7 @@ public abstract class LinearBase extends LinearOpMode{
 
             if(verbose)
             {
-                colorTelemetry(front, hsvValuesFront);
+                colorTelemetry(front);
                 telemetry.update();
             }
 
@@ -396,26 +330,19 @@ public abstract class LinearBase extends LinearOpMode{
         }
         else if(verbose)
         {
-                colorTelemetry(front, hsvValuesFront);
+                colorTelemetry(front);
                 telemetry.update();
         }
 
         move(speed, distanceToWall); // move back to position started in
     }
 
-    public void turnBackTo(double maxSpeed, int deg) // TODO: Make this
+    public void turnBackTo(double maxSpeed, double deg) throws InterruptedException // TODO: Test turnBackTo
     {
-
+        move(maxSpeed, deg - gyro.getIntegratedZValue());
     }
 
-    public void shoot() throws InterruptedException
-    {
-        shooter.setPower(0.5);
-        Thread.sleep(500);
-        shooter.setPower(0);
-    }
-
-    public void shootThreaded() // needs to be tested
+    public void shootThreaded()
     {
         if(!running)
         {
@@ -439,12 +366,20 @@ public abstract class LinearBase extends LinearOpMode{
 
     public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
     {
+        final int WAIT_TIME = 250;
+
+        if(distBeforeShoot > totalDist)
+        {
+            telemetry.addData("Warning", "Please use moveShootMove correctly, function may act weird");
+            telemetry.update();
+        }
+
         if(distBeforeShoot != 0)
             move(speed, distBeforeShoot);
 
         shootThreaded();
 
-        Thread.sleep(250); // time for it to shoot
+        Thread.sleep(WAIT_TIME); // time for it to shoot
 
         if(distBeforeShoot < totalDist)
             move(speed, totalDist - distBeforeShoot);
@@ -456,7 +391,6 @@ public abstract class LinearBase extends LinearOpMode{
         telemetry.addData("Gyro Heading: ", sensorGyro.getHeading() + "");
     }
 
-    // Not in use (and I dont think it will be again) but just if we need it, this is still here
     public void rangeTelemety(ModernRoboticsI2cRangeSensor rangeSensor)
     {
         telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
@@ -471,11 +405,5 @@ public abstract class LinearBase extends LinearOpMode{
         telemetry.addData("Blue", color.blue());
         telemetry.addData("Green", color.green());
         telemetry.addData("Alpha", color.alpha());
-    }
-
-    public void colorTelemetry(ColorSensor color, float[] hsvVals)
-    {
-        telemetry.addData("HSV", hsvVals);
-        colorTelemetry(color);
     }
 }

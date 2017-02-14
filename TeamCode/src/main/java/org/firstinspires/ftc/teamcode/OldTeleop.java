@@ -90,7 +90,6 @@ public class OldTeleop extends LinearBase {
             }
 
 
-
             right1.setPower(-1 * gamepad1.right_stick_y * (slow?SLOW_MOD:1));
             right2.setPower(-1 * gamepad1.right_stick_y * (slow?SLOW_MOD:1));
             left1.setPower(-1 * gamepad1.left_stick_y * (slow?SLOW_MOD:1));
@@ -108,7 +107,7 @@ public class OldTeleop extends LinearBase {
             }
             telemetry.update();
 
-            if(press) // TODO: make a better system for this that deosn't prevent use of the joysticks Threading?
+            if(press)
             {
                 Thread.sleep(250);
                 press = false;

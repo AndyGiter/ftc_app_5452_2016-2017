@@ -10,8 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  * Created by mlowery2 on 1/24/2017.
  *
  * This is just a program for me to learn how to use the touch sensor because there arent any sample programs
- *
- * TODO: Once LinearBase is updated with the touch, update this program
  */
 @Autonomous(name = "Touch Testing", group ="testing")
 public class TouchTester extends LinearBase {

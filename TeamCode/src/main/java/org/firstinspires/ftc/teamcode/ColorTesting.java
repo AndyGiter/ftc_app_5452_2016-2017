@@ -17,15 +17,24 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 
 public class ColorTesting extends LinearBase {
 
+    private boolean ledState = true;
+
     public void runOpMode() throws InterruptedException
     {
         initalize(DcMotor.RunMode.RUN_TO_POSITION, true);
-        front.enableLed(true); // this is just because we're using a printout of red & blue instead of the beacon
+        front.enableLed(ledState);
         waitForStart();
         sleep(100);
 
         while(opModeIsActive())
         {
+
+            if (gamepad1.a)
+            {
+                ledState = !ledState;
+                front.enableLed(ledState);
+                Thread.sleep(300);
+            }
 
             colorTelemetry(front);
             telemetry.update();
