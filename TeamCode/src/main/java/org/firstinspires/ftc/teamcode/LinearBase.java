@@ -38,8 +38,10 @@ public abstract class LinearBase extends LinearOpMode{
 
     DcMotor left1;
     DcMotor left2;
+    DcMotor left3;
     DcMotor right1;
     DcMotor right2;
+    DcMotor right3;
 
     DcMotor shooter;
     DcMotor collector;
@@ -58,8 +60,8 @@ public abstract class LinearBase extends LinearOpMode{
 
     boolean verbose = false;
 
-    final double MAX_MOVE_SPEED = 0.8; // YEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHH
-    final double MAX_TURN_SPEED = 1; // You spin me right round baby, right round
+    final double MAX_MOVE_SPEED = 0.85; // YEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHH
+    final double MAX_TURN_SPEED = 0.5; // You spin me right round baby, right round
 
     final int END_WAIT = 200;
 
@@ -82,26 +84,33 @@ public abstract class LinearBase extends LinearOpMode{
         // Motor Setup
         left1  = hardwareMap.dcMotor.get("left1");
         left2  = hardwareMap.dcMotor.get("left2");
+        left3  = hardwareMap.dcMotor.get("left3");
         right1 = hardwareMap.dcMotor.get("right1");
         right2 = hardwareMap.dcMotor.get("right2");
+        right3 = hardwareMap.dcMotor.get("right3");
 
         shooter = hardwareMap.dcMotor.get("snail");
         collector = hardwareMap.dcMotor.get("feed");
 
         right1.setDirection(DcMotor.Direction.REVERSE);
-        right2.setDirection(DcMotor.Direction.REVERSE);
+        right3.setDirection(DcMotor.Direction.REVERSE);
+        left2.setDirection(DcMotor.Direction.REVERSE); // (Crazy Train) https://www.youtube.com/watch?v=RMR5zf1J1Hs
 
         right1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         left1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         left2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         Thread.sleep(150);
 
         right1.setMode(defualtRunMode);
         right2.setMode(defualtRunMode);
-        left2.setMode(defualtRunMode);
+        right3.setMode(defualtRunMode);
         left1.setMode(defualtRunMode);
+        left2.setMode(defualtRunMode);
+        left3.setMode(defualtRunMode);
 
         collector.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -153,12 +162,20 @@ public abstract class LinearBase extends LinearOpMode{
 
     public void move(double speed, double distance) throws InterruptedException
     {
+        if(speed > MAX_MOVE_SPEED)
+        {
+            telemetry.addData("Warning", "Move speed is larger than the max move speed");
+            telemetry.update();
+        }
+
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
         {
             right1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             right2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            left2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            right3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             left1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            left2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            left3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
 
         //This if tests if the speed is negative and sets the distance to be negative.
@@ -171,46 +188,46 @@ public abstract class LinearBase extends LinearOpMode{
 
         right1.setTargetPosition((int) (right1.getCurrentPosition() + distance));
         right2.setTargetPosition((int) (right2.getCurrentPosition() + distance));
+        right3.setTargetPosition((int) (right3.getCurrentPosition() + distance));
         left1.setTargetPosition((int) (left1.getCurrentPosition() + distance));
         left2.setTargetPosition((int) (left2.getCurrentPosition() + distance));
+        left3.setTargetPosition((int) (left3.getCurrentPosition() + distance));
 
         right1.setPower(speed);
         right2.setPower(speed);
+        right3.setPower(speed);
         left1.setPower(speed);
         left2.setPower(speed);
+        left3.setPower(speed);
 
         while(opModeIsActive() && right1.isBusy() &&
                                   right2.isBusy() &&
+                                  right3.isBusy() &&
                                   left1.isBusy()  &&
-                                  left2.isBusy()){
+                                  left2.isBusy()  &&
+                                  left3.isBusy()){
             Thread.sleep(50);
 
         }
 
         right1.setPower(0);
         right2.setPower(0);
+        right3.setPower(0);
         left1.setPower(0);
         left2.setPower(0);
+        left3.setPower(0);
 
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION) // last thing to do
         {
             right1.setMode(defualtRunMode);
             right2.setMode(defualtRunMode);
-            left2.setMode(defualtRunMode);
+            right3.setMode(defualtRunMode);
             left1.setMode(defualtRunMode);
+            left2.setMode(defualtRunMode);
+            left3.setMode(defualtRunMode);
         }
 
         Thread.sleep(END_WAIT);
-    }
-
-    /*
-    * This is just a function to drive the robot along the wall while keeping a distance from it using the range sensor
-    * */
-    public void moveRange(double speed, double moveDist)
-    {
-        final double MAX_WALL_DIST = 17; // TODO: Test this, the measurement is in cm
-        final double MIN_WALL_DIST = 5; // TODO: Test this, the measurement is in cm
-
     }
 
     /*
@@ -225,12 +242,20 @@ public abstract class LinearBase extends LinearOpMode{
         double targetHeading = gyro.getIntegratedZValue() + deg;
         double speed = maxSpeed;
 
+        if(maxSpeed > MAX_TURN_SPEED)
+        {
+            telemetry.addData("Warning", "Turning faster than max turn speed");
+            telemetry.update();
+        }
+
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
         {
             right1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             right2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            left2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            right3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             left1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            left2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            left3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
         // While the gyro is not within the range (TURN_RANGE)
@@ -244,8 +269,10 @@ public abstract class LinearBase extends LinearOpMode{
             {
                 left1.setPower(speed);
                 left2.setPower(speed);
+                left3.setPower(speed);
                 right1.setPower(-1 * speed);
                 right2.setPower(-1 * speed);
+                right3.setPower(-1 * speed);
             }
 
             else //then its a left turn
@@ -253,8 +280,10 @@ public abstract class LinearBase extends LinearOpMode{
 
                 left1.setPower(-1 * speed);
                 left2.setPower(-1 * speed);
+                left3.setPower(-1 * speed);
                 right1.setPower(speed);
                 right2.setPower(speed);
+                right3.setPower(speed);
             }
 
             if(verbose)
@@ -269,15 +298,19 @@ public abstract class LinearBase extends LinearOpMode{
 
         right1.setPower(0);
         right2.setPower(0);
+        right3.setPower(0);
         left1.setPower(0);
         left2.setPower(0);
+        left3.setPower(0);
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) // last thing to do
         {
             right1.setMode(defualtRunMode);
             right2.setMode(defualtRunMode);
-            left2.setMode(defualtRunMode);
+            right3.setMode(defualtRunMode);
             left1.setMode(defualtRunMode);
+            left2.setMode(defualtRunMode);
+            left3.setMode(defualtRunMode);
         }
 
         if (verbose) {

@@ -14,11 +14,14 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 @TeleOp(name="New Teleop", group="Teleop")
 public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub didn't work
 
-    private final double SLOW_MOD = 0.3; // 30% of normal speed TODO: Retest for new drive train and maybe new controls
-    private boolean slow = false;
+    private double speedMod = 1;
+    private final double SLOW_MOD = 0.6; // 60% of normal speed TODO: Retest for new drive train and maybe new controls
+    private final double SUPER_SLOW_MOD = 0.3;
 
     private boolean press = false;
     private final int PRESS_TIME = 250;
+
+    private final double TRIGGER_THRESHOLD = 0.35; // Below this value, the trigger does not count as being pressed
 
     public void runOpMode() throws InterruptedException
     {
@@ -53,27 +56,36 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
                 collector.setPower(0);
             }
 
-            if(gamepad1.y)
+            if(gamepad1.left_trigger > TRIGGER_THRESHOLD)
             {
-                slow = !slow;
-
-                press = true;
+                speedMod = SUPER_SLOW_MOD;
             }
 
-            right1.setPower(-1 * gamepad1.right_stick_y * (slow?SLOW_MOD:1));
-            right2.setPower(-1 * gamepad1.right_stick_y * (slow?SLOW_MOD:1));
-            left1.setPower(-1 * gamepad1.left_stick_y * (slow?SLOW_MOD:1));
-            left2.setPower(-1 * gamepad1.left_stick_y * (slow?SLOW_MOD:1));
+            else if(gamepad1.right_trigger > TRIGGER_THRESHOLD)
+            {
+                speedMod = SLOW_MOD;
+            }
+            else
+            {
+                speedMod = 1;
+            }
 
-            telemetry.addData("Is slow mode on", slow);
+            right1.setPower(-1 * gamepad1.right_stick_y * speedMod);
+            right2.setPower(-1 * gamepad1.right_stick_y * speedMod);
+            right3.setPower(-1 * gamepad1.right_stick_y * speedMod);
+            left1.setPower(-1 * gamepad1.left_stick_y * speedMod);
+            left2.setPower(-1 * gamepad1.left_stick_y * speedMod);
+            left3.setPower(-1 * gamepad1.left_stick_y * speedMod);
+
+            telemetry.addData("Current Speed Mod", (speedMod*100)+"%");
             if(verbose)
             {
-                telemetry.addData("Shooter is busy?", shooter.isBusy());
-                telemetry.addData("Current Shooter Pos", shooter.getCurrentPosition());
-                telemetry.addData("Shooter Target Pos", shooter.getTargetPosition());
-                telemetry.addData("A button", gamepad1.a);
-                telemetry.addData("Button State", touch.getState());
-                telemetry.addData("Running", running);
+                telemetry.addData("Shooter is busy?", shooter.isBusy()?"Yes":"No");
+                telemetry.addData("Current Shooter Pos", shooter.getCurrentPosition()+" deg.");
+                telemetry.addData("Shooter Target Pos", shooter.getTargetPosition()+" deg.");
+                telemetry.addData("A button pressed?", gamepad1.a?"Yes" : "No");
+                telemetry.addData("Touch Sensor pressed?", touch.getState()?"Yes":"No");
+                telemetry.addData("Shooter Spin Thread Running", running?"Yes":"No");
             }
             telemetry.update();
 

@@ -92,8 +92,10 @@ public class OldTeleop extends LinearBase {
 
             right1.setPower(-1 * gamepad1.right_stick_y * (slow?SLOW_MOD:1));
             right2.setPower(-1 * gamepad1.right_stick_y * (slow?SLOW_MOD:1));
+            right3.setPower(-1 * gamepad1.right_stick_y * (slow?SLOW_MOD:1));
             left1.setPower(-1 * gamepad1.left_stick_y * (slow?SLOW_MOD:1));
             left2.setPower(-1 * gamepad1.left_stick_y * (slow?SLOW_MOD:1));
+            left3.setPower(-1 * gamepad1.left_stick_y * (slow?SLOW_MOD:1));
 
             telemetry.addData("Is slow mode on", slow);
             if(verbose)
