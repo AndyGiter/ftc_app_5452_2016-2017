@@ -54,6 +54,8 @@ public abstract class LinearBase extends LinearOpMode{
 
     ModernRoboticsI2cGyro gyro; // Default I2C address 0x20
 
+    ModernRoboticsI2cRangeSensor range;
+
     DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
     private final float DEADZONE = 0.200f;
@@ -121,6 +123,8 @@ public abstract class LinearBase extends LinearOpMode{
         front = hardwareMap.colorSensor.get("front");
 
         front.setI2cAddress(i2cAddrFront);
+
+        range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range");
 
         // Light needs to be off for use, but is on as a visual example that the color sensor is reading commands and that the robot is still initalizing (even though there are other clues)
         front.enableLed(true);
@@ -314,7 +318,7 @@ public abstract class LinearBase extends LinearOpMode{
         }
 
         if (verbose) {
-            telemetry.addData("Done: ", "Turning. " + deg + " deg. Heading: " + gyro.getIntegratedZValue() + " Target Heading: "+targetHeading); telemetry.update();}
+            telemetry.addData("Done: ", "Turning. " + deg + " deg. Heading: " + gyro.getIntegratedZValue() + " Target Heading: " + targetHeading); telemetry.update();}
 
         Thread.sleep(END_WAIT);
     }
@@ -368,6 +372,102 @@ public abstract class LinearBase extends LinearOpMode{
         }
 
         move(speed, distanceToWall); // move back to position started in
+    }
+
+    public void pressAndTest(double speed, int colorWanted) throws InterruptedException // recomended speed: 0.3
+    {
+        final double WAIT_BEFORE_MOVE = 5; // in sec // TODO: Test to see what the smallest value for this is
+        final double MOVE_BACK_DIST = 1440*0.5 * -1;
+        final double SECOND_PRESS_DIST = 1440 * 0.7 * -1;
+        final int WAIT_BEFORE_READ = 300; // In ms
+        final double STOP_DIST = 6; // The distance from the wall to the robot where the robot will stop in cm
+
+        front.enableLed(false);
+
+        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
+        {
+            right1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            right2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            right3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            left1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            left2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            left3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+
+        // move into beacon
+        right1.setPower(speed);
+        right2.setPower(speed);
+        right3.setPower(speed);
+        left1.setPower(speed);
+        left2.setPower(speed);
+        left3.setPower(speed);
+
+        while(range.getDistance(DistanceUnit.CM) > STOP_DIST)
+        {
+            if(verbose)
+            {
+                rangeTelemety(range);
+                motorTelemetry(right2); // Just picked a random motor, can't have 'em all
+                telemetry.update();
+            }
+        }
+
+        right1.setPower(0);
+        right2.setPower(0);
+        right3.setPower(0);
+        left1.setPower(0);
+        left2.setPower(0);
+        left3.setPower(0);
+
+        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) // last thing to do
+        {
+            right1.setMode(defualtRunMode);
+            right2.setMode(defualtRunMode);
+            right3.setMode(defualtRunMode);
+            left1.setMode(defualtRunMode);
+            left2.setMode(defualtRunMode);
+            left3.setMode(defualtRunMode);
+        }
+
+        double pressTime = getRuntime();
+
+        sleep(WAIT_BEFORE_READ);
+
+        if(front.red() == 0 && front.blue() == 0) // no need to test green because its useless :(
+        {
+            telemetry.addData("Warning", "Not close enough to sense beacon color");
+            telemetry.update();
+        }
+
+        else if(front.red() == 255 && front.blue() == 255)
+        {
+            telemetry.addData("Error", "Color sensor is broken again");
+            telemetry.update();
+        }
+
+        else if((front.red() > front.blue() && colorWanted == Color.BLUE) || (front.blue() > front.red() && colorWanted == Color.RED))
+        {
+
+            if(verbose)
+            {
+                colorTelemetry(front);
+                telemetry.update();
+                front.enableLed(true); // as a way to signel that it will go back in and press
+            }
+
+            move(speed, MOVE_BACK_DIST); // move back from wall
+
+            while(getRuntime()-pressTime < WAIT_BEFORE_MOVE && opModeIsActive()){sleep(30);} // making sure to wait enough time before pressing again
+
+            move(speed, -1*SECOND_PRESS_DIST); // move back in, hitting the button
+        }
+        else if(verbose) // if all else fails
+        {
+            colorTelemetry(front);
+            telemetry.update();
+        }
+
+        move(speed, MOVE_BACK_DIST); // move back from wall
     }
 
     public void turnBackTo(double maxSpeed, double deg) throws InterruptedException // TODO: Test turnBackTo
@@ -438,5 +538,13 @@ public abstract class LinearBase extends LinearOpMode{
         telemetry.addData("Blue", color.blue());
         telemetry.addData("Green", color.green());
         telemetry.addData("Alpha", color.alpha());
+    }
+
+    public void motorTelemetry(DcMotor motor)
+    {
+        telemetry.addData("Target Dist", motor.getTargetPosition());
+        telemetry.addData("Target Dist", motor.getTargetPosition());
+        telemetry.addData("Is Busy", motor.isBusy()?"Yes":"No");
+
     }
 }
