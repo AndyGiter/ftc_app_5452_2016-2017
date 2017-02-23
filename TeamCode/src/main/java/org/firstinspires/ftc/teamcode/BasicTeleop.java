@@ -8,7 +8,16 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  *
  * This is the tele op program for team 5452
  *
- * TODO: Add control comment (maybe wait until the end of the year)
+ * Gamepad1:
+ *  Start: Add additional logging
+ *  A: Automatic shoot and reload
+ *  B: Manual turn of the snail cam
+ *  Right Bumper: Collect balls
+ *  Left Bumper: Push out balls
+ *  Right Trigger: Super slow mode (30% Speed)
+ *  Left Trigger: Slow Mode (60% Speed)
+ *  Right Stick (up and down): Right motors forwards and backwards
+ *  Left Stick (up and down): Left Motors forwards and backwards
  */
 
 @TeleOp(name="New Teleop", group="Teleop")
@@ -64,12 +73,12 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
                 collector.setPower(0);
             }
 
-            if(gamepad1.left_trigger > TRIGGER_THRESHOLD)
+            if(gamepad1.right_trigger > TRIGGER_THRESHOLD)
             {
                 speedMod = SUPER_SLOW_MOD;
             }
 
-            else if(gamepad1.right_trigger > TRIGGER_THRESHOLD)
+            else if(gamepad1.left_trigger > TRIGGER_THRESHOLD)
             {
                 speedMod = SLOW_MOD;
             }
