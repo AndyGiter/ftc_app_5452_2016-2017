@@ -42,6 +42,14 @@ public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub
             {
                 shootThreaded();
             }
+            else if(gamepad1.b && !running)
+            {
+                shooter.setPower(0.9);
+            }
+            else if(!running)
+            {
+                shooter.setPower(0);
+            }
 
             if(gamepad1.right_bumper)
             {
