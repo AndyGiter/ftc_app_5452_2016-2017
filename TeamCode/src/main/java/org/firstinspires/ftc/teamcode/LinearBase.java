@@ -63,7 +63,7 @@ public abstract class LinearBase extends LinearOpMode{
     boolean verbose = false;
 
     final double MAX_MOVE_SPEED = 0.85; // YEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHH
-    final double MAX_TURN_SPEED = 0.5; // You spin me right round baby, right round
+    final double MAX_TURN_SPEED = 0.3; // You spin me right round baby, right round
 
     final int END_WAIT = 200;
 
@@ -166,6 +166,8 @@ public abstract class LinearBase extends LinearOpMode{
 
     public void move(double speed, double distance) throws InterruptedException
     {
+        final int WAIT_BEFORE_MOVE = 100;
+
         if(speed > MAX_MOVE_SPEED)
         {
             telemetry.addData("Warning", "Move speed is larger than the max move speed");
@@ -197,28 +199,30 @@ public abstract class LinearBase extends LinearOpMode{
         left2.setTargetPosition((int) (left2.getCurrentPosition() + distance));
         left3.setTargetPosition((int) (left3.getCurrentPosition() + distance));
 
+        Thread.sleep(WAIT_BEFORE_MOVE);
+
         right1.setPower(speed);
-        right2.setPower(speed);
-        right3.setPower(speed);
         left1.setPower(speed);
+        right2.setPower(speed);
         left2.setPower(speed);
+        right3.setPower(speed);
         left3.setPower(speed);
 
         while(opModeIsActive() && right1.isBusy() &&
-                                  right2.isBusy() &&
-                                  right3.isBusy() &&
-                                  left1.isBusy()  &&
-                                  left2.isBusy()  &&
-                                  left3.isBusy()){
+                right2.isBusy() &&
+                right3.isBusy() &&
+                left1.isBusy()  &&
+                left2.isBusy()  &&
+                left3.isBusy()){
             Thread.sleep(50);
 
         }
 
         right1.setPower(0);
-        right2.setPower(0);
-        right3.setPower(0);
         left1.setPower(0);
+        right2.setPower(0);
         left2.setPower(0);
+        right3.setPower(0);
         left3.setPower(0);
 
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION) // last thing to do
@@ -235,14 +239,14 @@ public abstract class LinearBase extends LinearOpMode{
     }
 
     /*
-     * If no direction is given. This is done mainly so I don't have to go back and update old code that doesnt use the gyro and uses encoder values
      * Negative deg value turns right
      * Positive is left
      */
     public void turn(double maxSpeed, double deg) throws InterruptedException
     {
         final int TURN_RANGE = 2;
-        final double MIN_SPEED = 0.01;
+        final double MIN_SPEED = 0.03; // play around with this
+        final int WAIT_BEFORE_MOVE = 100;
         double targetHeading = gyro.getIntegratedZValue() + deg;
         double speed = maxSpeed;
 
@@ -252,6 +256,7 @@ public abstract class LinearBase extends LinearOpMode{
             telemetry.update();
         }
 
+
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
         {
             right1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -260,33 +265,33 @@ public abstract class LinearBase extends LinearOpMode{
             left1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             left2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             left3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            Thread.sleep(WAIT_BEFORE_MOVE);
         }
 
         // While the gyro is not within the range (TURN_RANGE)
         while(!(gyro.getIntegratedZValue() <= targetHeading+(TURN_RANGE/2.0) && gyro.getIntegratedZValue() >= targetHeading-(TURN_RANGE/2.0)) && opModeIsActive())
         {
-            //if(Math.abs(targetHeading - gyro.getIntegratedZValue()) <= 45)
-
             speed = Range.clip(maxSpeed * Math.abs((gyro.getIntegratedZValue() - targetHeading) / deg), MIN_SPEED, maxSpeed);
 
             if(gyro.getIntegratedZValue() > targetHeading) // Right turn
             {
-                left1.setPower(speed);
-                left2.setPower(speed);
-                left3.setPower(speed);
                 right1.setPower(-1 * speed);
+                left1.setPower(speed);
                 right2.setPower(-1 * speed);
+                left2.setPower(speed);
                 right3.setPower(-1 * speed);
+                left3.setPower(speed);
             }
 
             else //then its a left turn
             {
 
                 left1.setPower(-1 * speed);
-                left2.setPower(-1 * speed);
-                left3.setPower(-1 * speed);
                 right1.setPower(speed);
+                left2.setPower(-1 * speed);
                 right2.setPower(speed);
+                left3.setPower(-1 * speed);
                 right3.setPower(speed);
             }
 
@@ -301,10 +306,10 @@ public abstract class LinearBase extends LinearOpMode{
         }
 
         right1.setPower(0);
-        right2.setPower(0);
-        right3.setPower(0);
         left1.setPower(0);
+        right2.setPower(0);
         left2.setPower(0);
+        right3.setPower(0);
         left3.setPower(0);
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) // last thing to do
@@ -316,6 +321,7 @@ public abstract class LinearBase extends LinearOpMode{
             left2.setMode(defualtRunMode);
             left3.setMode(defualtRunMode);
         }
+
 
         if (verbose) {
             telemetry.addData("Done: ", "Turning. " + deg + " deg. Heading: " + gyro.getIntegratedZValue() + " Target Heading: " + targetHeading); telemetry.update();}
@@ -394,12 +400,14 @@ public abstract class LinearBase extends LinearOpMode{
             left3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
+        Thread.sleep(100);
+
         // move into beacon
         right1.setPower(speed);
-        right2.setPower(speed);
-        right3.setPower(speed);
         left1.setPower(speed);
+        right2.setPower(speed);
         left2.setPower(speed);
+        right3.setPower(speed);
         left3.setPower(speed);
 
         while(range.getDistance(DistanceUnit.CM) > STOP_DIST)
@@ -413,10 +421,10 @@ public abstract class LinearBase extends LinearOpMode{
         }
 
         right1.setPower(0);
-        right2.setPower(0);
-        right3.setPower(0);
         left1.setPower(0);
+        right2.setPower(0);
         left2.setPower(0);
+        right3.setPower(0);
         left3.setPower(0);
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) // last thing to do
