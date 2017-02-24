@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Color;
+
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -13,8 +15,8 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 /**
  * Created by 5452 Main on 1/31/2017.
  */
+@Disabled
 @Autonomous (name = "Josh's Dank Press and Test", group = "Auto")
-
 public class JoshsPressandTest extends LinearOpMode {
 
     DcMotor left1;
