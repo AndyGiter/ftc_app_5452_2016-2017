@@ -329,6 +329,7 @@ public abstract class LinearBase extends LinearOpMode{
         Thread.sleep(END_WAIT);
     }
 
+    @Deprecated
     public void pressAndTest(double speed, double distanceToWall, int colorWanted) throws InterruptedException
     {
         final double WAIT_BEFORE_MOVE = 5; // TODO: Test to see what the smallest value for this is
@@ -385,8 +386,10 @@ public abstract class LinearBase extends LinearOpMode{
         final double WAIT_BEFORE_MOVE = 5; // in sec // TODO: Test to see what the smallest value for this is
         final double MOVE_BACK_DIST = 1440*0.5 * -1;
         final double SECOND_PRESS_DIST = 1440 * 0.7 * -1;
-        final int WAIT_BEFORE_READ = 300; // In ms
-        final double STOP_DIST = 6; // The distance from the wall to the robot where the robot will stop in cm
+        final int WAIT_BEFORE_READ = 500; // In ms
+        final int SLOW_DIST = 9; // The distance from the wall to the robot where the robot will stop in cm
+        final int STOP_DIST = 6;
+        final double SLOW_SPEED = speed/2.0;
 
         front.enableLed(false);
 
@@ -402,6 +405,8 @@ public abstract class LinearBase extends LinearOpMode{
 
         Thread.sleep(100);
 
+
+
         // move into beacon
         right1.setPower(speed);
         left1.setPower(speed);
@@ -410,12 +415,31 @@ public abstract class LinearBase extends LinearOpMode{
         right3.setPower(speed);
         left3.setPower(speed);
 
+        while(range.getDistance(DistanceUnit.CM) > SLOW_DIST)
+        {
+            if(verbose)
+            {
+                telemetry.addData("Speed", speed);
+                rangeTelemety(range);
+                motorTelemetry(right1); // Just picked a random motor, can't have 'em all
+                telemetry.update();
+            }
+        }
+
+        right1.setPower(SLOW_SPEED);
+        left1.setPower(SLOW_SPEED);
+        right2.setPower(SLOW_SPEED);
+        left2.setPower(SLOW_SPEED);
+        right3.setPower(SLOW_SPEED);
+        left3.setPower(SLOW_SPEED);
+
         while(range.getDistance(DistanceUnit.CM) > STOP_DIST)
         {
             if(verbose)
             {
+                telemetry.addData("Speed", SLOW_SPEED);
                 rangeTelemety(range);
-                motorTelemetry(right2); // Just picked a random motor, can't have 'em all
+                motorTelemetry(right1); // Just picked a random motor, can't have 'em all
                 telemetry.update();
             }
         }
