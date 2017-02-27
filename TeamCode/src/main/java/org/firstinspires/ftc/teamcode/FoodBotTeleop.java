@@ -26,44 +26,26 @@ public class FoodBotTeleop extends LinearOpMode {
             if (gamepad1.left_bumper) {
                 left1.setPower(1.0);
                 right1.setPower(1.0);
-            } else {
-                left1.setPower(0);
-                right1.setPower(0);
-            }
-            if (gamepad1.a) {
+            } else if (gamepad1.a) {
                 left1.setPower(-1);
                 right1.setPower(-1);
-            } else {
-                left1.setPower(0);
-                right1.setPower(0);
-            }
-            if (gamepad1.right_bumper) {
+            } else if (gamepad1.right_bumper) {
                 left2.setPower(1.0);
                 right2.setPower(1.0);
-            } else {
-                left2.setPower(0);
-                right2.setPower(0);
-            }
-            if (gamepad1.dpad_down) {
+            } else if (gamepad1.dpad_down) {
                 left2.setPower(-1);
                 right2.setPower(-1);
-            } else {
-                left2.setPower(0);
-                right2.setPower(0);
-            }
-            if (gamepad1.dpad_left) {
+            } else if (gamepad1.dpad_left) {
                 left1.setPower(1);
                 right2.setPower(1);
-            } else {
-                left1.setPower(0);
-                right2.setPower(0);
-            }
-            if (gamepad1.b) {
+            } else if (gamepad1.b) {
                 left2.setPower(1);
                 right1.setPower(1);
             } else {
                 left2.setPower(0);
                 right1.setPower(0);
+                left1.setPower(0);
+                right2.setPower(0);
             }
         }
     }
