@@ -23,24 +23,26 @@ public class FoodBotTeleop extends LinearOpMode {
         waitForStart();
         while (opModeIsActive()) {
 
-            if (gamepad1.left_bumper) {
-                left1.setPower(1.0);
-                right1.setPower(1.0);
+            if (gamepad1.y) {
+                right1.setPower(.7);
+                right2.setPower(.7);
+                left1.setPower(.7);
+                left2.setPower(.7);
+            } else if (gamepad1.x) {
+                left2.setPower(-.7);
+                left1.setPower(-.7);
+                right1.setPower(.7);
+                right2.setPower(.7);
             } else if (gamepad1.a) {
-                left1.setPower(-1);
-                right1.setPower(-1);
-            } else if (gamepad1.right_bumper) {
-                left2.setPower(1.0);
-                right2.setPower(1.0);
-            } else if (gamepad1.dpad_down) {
-                left2.setPower(-1);
-                right2.setPower(-1);
-            } else if (gamepad1.dpad_left) {
-                left1.setPower(1);
-                right2.setPower(1);
+                right2.setPower(-.7);
+                right1.setPower(-.7);
+                left1.setPower(-.7);
+                left2.setPower(-.7);
             } else if (gamepad1.b) {
-                left2.setPower(1);
-                right1.setPower(1);
+                left1.setPower(.7);
+                left2.setPower(.7);
+                right1.setPower(-.7);
+                right2.setPower(-.7);
             } else {
                 left2.setPower(0);
                 right1.setPower(0);
@@ -57,11 +59,11 @@ public class FoodBotTeleop extends LinearOpMode {
         right2 = hardwareMap.dcMotor.get("right2");
 
 
-        left1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        left2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        left1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        left2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        right1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        right2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        right1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        right2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
     }
