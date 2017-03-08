@@ -21,10 +21,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  */
 
 @TeleOp(name="New Teleop", group="Teleop")
-public class BasicTeleop extends LinearBase { // TODO: Look into why the usb hub didn't work
+public class BasicTeleop extends LinearBase {
 
     private double speedMod = 1;
-    private final double SLOW_MOD = 0.6; // 60% of normal speed TODO: Retest for new drive train and maybe new controls
+    private final double SLOW_MOD = 0.6; // 60% of normal speed
     private final double SUPER_SLOW_MOD = 0.3;
 
     private boolean press = false;

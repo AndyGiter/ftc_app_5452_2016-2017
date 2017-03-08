@@ -32,18 +32,3 @@ public class ShootAndBeaconRed extends LinearBase {
     }
 }
 
-/*
-        moveShootMove(-MAX_MOVE_SPEED, 1440 * 2, 1440 * 2); // shoot
-
-        turn(MAX_TURN_SPEED, 45); // turn left 45
-
-        move(MAX_MOVE_SPEED * -1, 1440*4); // the diag
-
-        turn(MAX_TURN_SPEED, -140); // turn to face the button
-
-        pressAndTest(MAX_MOVE_SPEED, 1440 * -1.8, Color.RED); // press
-
-        move(-MAX_MOVE_SPEED, 1440*4); // Move back into the cap ball
-
-        turn(MAX_TURN_SPEED, -80); // DONT FALL OVER ROBOT (bump)
- */
