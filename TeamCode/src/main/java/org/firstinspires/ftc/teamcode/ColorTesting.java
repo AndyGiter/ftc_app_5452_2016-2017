@@ -22,7 +22,7 @@ public class ColorTesting extends LinearBase {
     public void runOpMode() throws InterruptedException
     {
         initalize(DcMotor.RunMode.RUN_TO_POSITION, true);
-        front.enableLed(ledState);
+        frontColor.enableLed(ledState);
         waitForStart();
         sleep(100);
 
@@ -32,11 +32,11 @@ public class ColorTesting extends LinearBase {
             if (gamepad1.a)
             {
                 ledState = !ledState;
-                front.enableLed(ledState);
+                frontColor.enableLed(ledState);
                 Thread.sleep(300);
             }
 
-            colorTelemetry(front);
+            colorTelemetry(frontColor);
             telemetry.update();
             Thread.sleep(50);
         }
