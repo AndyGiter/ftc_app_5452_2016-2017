@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
  // Moving parts
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,9 +19,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  // Misc.
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.util.Range;
-
 import android.graphics.Color;
-
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /**
@@ -46,15 +45,28 @@ public abstract class LinearBase extends LinearOpMode{
     DcMotor shooter;
     DcMotor collector;
 
-    ColorSensor front;
+    Servo sonarServo;
+    Servo pressServo;
+    //Servo funnelLeft;
+    //Servo funnelRight;
+
+    ColorSensor frontColor;
+
+    private I2cAddr i2cAddrFrontColor = I2cAddr.create8bit(0x4c);
 
     DigitalChannel touch;
 
-    private I2cAddr i2cAddrFront = I2cAddr.create8bit(0x4c);
-
     ModernRoboticsI2cGyro gyro; // Default I2C address 0x20
 
-    ModernRoboticsI2cRangeSensor range;
+    ModernRoboticsI2cRangeSensor frontRange; // The range sensor on the front of the robot
+    ModernRoboticsI2cRangeSensor sonarRange; // The range sensor under the side button presser
+    ModernRoboticsI2cRangeSensor complementaryRange; // The range sensor thats also on the side with pressRange, but not under the side button pressor
+
+    private I2cAddr i2cAddrFrontRange = I2cAddr.create8bit(0x28); // default I2C address for the range sensor
+    private I2cAddr i2cAddrSonarRange = I2cAddr.create8bit(0x4c);
+    private I2cAddr i2cAddrConplementaryRange = I2cAddr.create8bit(0x4c);
+
+    OpticalDistanceSensor lightBottom;
 
     DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
@@ -73,7 +85,7 @@ public abstract class LinearBase extends LinearOpMode{
     {
         double start = getRuntime();
 
-        telemetry.addData("Done: ","Starting init"); telemetry.update();
+        telemetry.addData("Done: ", "Starting init"); telemetry.update();
 
         // Gyro (this comes first so we can do other things, like initalizing other things, while this calibrates.)
         gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("gyro");
@@ -98,21 +110,14 @@ public abstract class LinearBase extends LinearOpMode{
         right3.setDirection(DcMotor.Direction.REVERSE);
         left2.setDirection(DcMotor.Direction.REVERSE); // (Crazy Train) https://www.youtube.com/watch?v=RMR5zf1J1Hs
 
-        right1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        right2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        right3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        left1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        left2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        left3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setDriveMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Resets the encoders on the motors
 
         Thread.sleep(150);
 
-        right1.setMode(defualtRunMode);
-        right2.setMode(defualtRunMode);
-        right3.setMode(defualtRunMode);
-        left1.setMode(defualtRunMode);
-        left2.setMode(defualtRunMode);
-        left3.setMode(defualtRunMode);
+        resetDriveMotorMode(); // sets all the motors to the default runMode
+
+        sonarServo = hardwareMap.servo.get("sonar");
+        pressServo = hardwareMap.servo.get("press");
 
         collector.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -120,14 +125,19 @@ public abstract class LinearBase extends LinearOpMode{
         shooter.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //Color Sensor Setup
-        front = hardwareMap.colorSensor.get("front");
+        frontColor = hardwareMap.colorSensor.get("front");
 
-        front.setI2cAddress(i2cAddrFront);
+        frontColor.setI2cAddress(i2cAddrFrontColor);
 
-        range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range");
+        frontRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "frontRange");
+        sonarRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sonarRange");
+        complementaryRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "complementaryRange");
 
-        // Light needs to be off for use, but is on as a visual example that the color sensor is reading commands and that the robot is still initalizing (even though there are other clues)
-        front.enableLed(true);
+        frontRange.setI2cAddress(i2cAddrFrontRange);
+        sonarRange.setI2cAddress(i2cAddrSonarRange);
+        complementaryRange.setI2cAddress(i2cAddrConplementaryRange);
+
+        lightBottom = hardwareMap.opticalDistanceSensor.get("light");
 
         // Setting the deadzone for the gamepads
         gamepad1.setJoystickDeadzone(DEADZONE);
@@ -143,7 +153,7 @@ public abstract class LinearBase extends LinearOpMode{
         if(verbose){telemetry.addData("Done: ","Initalizing. Took " + (getRuntime()-start) + " seconds"); telemetry.update();}
         else{telemetry.addData("Done", "Initalizing"); telemetry.update();}
 
-        front.enableLed(false);
+        frontColor.enableLed(false);
     }
 
     public void initalize(DcMotor.RunMode newDefualtRunMode) throws InterruptedException
@@ -176,12 +186,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
         {
-            right1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            right2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            right3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            left1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            left2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            left3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            setDriveMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
 
         //This if tests if the speed is negative and sets the distance to be negative.
@@ -227,12 +232,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION) // last thing to do
         {
-            right1.setMode(defualtRunMode);
-            right2.setMode(defualtRunMode);
-            right3.setMode(defualtRunMode);
-            left1.setMode(defualtRunMode);
-            left2.setMode(defualtRunMode);
-            left3.setMode(defualtRunMode);
+            resetDriveMotorMode();
         }
 
         Thread.sleep(END_WAIT);
@@ -259,12 +259,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
         {
-            right1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            right2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            right3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            left1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            left2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            left3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            setDriveMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             Thread.sleep(WAIT_BEFORE_MOVE);
         }
@@ -297,8 +292,7 @@ public abstract class LinearBase extends LinearOpMode{
 
             if(verbose)
             {
-                telemetry.addData("Gyro target: ", targetHeading+"");
-                telemetry.addData("Gyro heading: ", gyro.getIntegratedZValue()+"");
+                gyroTelemetry(gyro);
                 telemetry.addData("Robot Max speed: ", maxSpeed+"");
                 telemetry.addData("Robot speed: ", speed+"");
                 telemetry.update();
@@ -314,12 +308,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) // last thing to do
         {
-            right1.setMode(defualtRunMode);
-            right2.setMode(defualtRunMode);
-            right3.setMode(defualtRunMode);
-            left1.setMode(defualtRunMode);
-            left2.setMode(defualtRunMode);
-            left3.setMode(defualtRunMode);
+            resetDriveMotorMode();
         }
 
 
@@ -327,58 +316,6 @@ public abstract class LinearBase extends LinearOpMode{
             telemetry.addData("Done: ", "Turning. " + deg + " deg. Heading: " + gyro.getIntegratedZValue() + " Target Heading: " + targetHeading); telemetry.update();}
 
         Thread.sleep(END_WAIT);
-    }
-
-    @Deprecated
-    public void pressAndTest(double speed, double distanceToWall, int colorWanted) throws InterruptedException
-    {
-        final double WAIT_BEFORE_MOVE = 5; // TODO: Test to see what the smallest value for this is
-        final double MOVE_BACK_DIST = 1440*0.5 * -1;
-        final double SECOND_PRESS_DIST = 1440 * 0.7 * -1;
-        final int WAIT_BEFORE_READ = 300;
-
-        front.enableLed(false);
-
-        move(speed, -1 * distanceToWall); // move into beacon
-
-        double pressTime = getRuntime();
-
-        sleep(WAIT_BEFORE_READ);
-
-        if(front.red() == 0 && front.blue() == 0) // no need to test green because its useless :(
-        {
-            telemetry.addData("Warning", "Not close enough to sense beacon color");
-            telemetry.update();
-        }
-
-        else if(front.red() == 255 && front.blue() == 255)
-        {
-            telemetry.addData("Error", "Color sensor is broken again");
-            telemetry.update();
-        }
-
-        else if((front.red() > front.blue() && colorWanted == Color.BLUE) || (front.blue() > front.red() && colorWanted == Color.RED))
-        {
-
-            if(verbose)
-            {
-                colorTelemetry(front);
-                telemetry.update();
-            }
-
-            move(speed, MOVE_BACK_DIST); // move back from wall
-
-            while(getRuntime()-pressTime < WAIT_BEFORE_MOVE && opModeIsActive()){sleep(50);} // making sure to wait enough time before pressing again
-
-            move(speed, -1*SECOND_PRESS_DIST); // move back in, hitting the button
-        }
-        else if(verbose)
-        {
-                colorTelemetry(front);
-                telemetry.update();
-        }
-
-        move(speed, distanceToWall); // move back to position started in
     }
 
     public void pressAndTest(double speed, int colorWanted) throws InterruptedException // recomended speed: 0.3
@@ -391,21 +328,14 @@ public abstract class LinearBase extends LinearOpMode{
         final int STOP_DIST = 6;
         final double SLOW_SPEED = speed/2.0;
 
-        front.enableLed(false);
+        frontColor.enableLed(false);
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
         {
-            right1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            right2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            right3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            left1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            left2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            left3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            setDriveMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
         Thread.sleep(100);
-
-
 
         // move into beacon
         right1.setPower(speed);
@@ -415,12 +345,12 @@ public abstract class LinearBase extends LinearOpMode{
         right3.setPower(speed);
         left3.setPower(speed);
 
-        while(range.getDistance(DistanceUnit.CM) > SLOW_DIST)
+        while(frontRange.getDistance(DistanceUnit.CM) > SLOW_DIST)
         {
             if(verbose)
             {
                 telemetry.addData("Speed", speed);
-                rangeTelemety(range);
+                rangeTelemety(frontRange);
                 motorTelemetry(right1); // Just picked a random motor, can't have 'em all
                 telemetry.update();
             }
@@ -433,12 +363,12 @@ public abstract class LinearBase extends LinearOpMode{
         right3.setPower(SLOW_SPEED);
         left3.setPower(SLOW_SPEED);
 
-        while(range.getDistance(DistanceUnit.CM) > STOP_DIST)
+        while(frontRange.getDistance(DistanceUnit.CM) > STOP_DIST)
         {
             if(verbose)
             {
                 telemetry.addData("Speed", SLOW_SPEED);
-                rangeTelemety(range);
+                rangeTelemety(frontRange);
                 motorTelemetry(right1); // Just picked a random motor, can't have 'em all
                 telemetry.update();
             }
@@ -453,38 +383,33 @@ public abstract class LinearBase extends LinearOpMode{
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) // last thing to do
         {
-            right1.setMode(defualtRunMode);
-            right2.setMode(defualtRunMode);
-            right3.setMode(defualtRunMode);
-            left1.setMode(defualtRunMode);
-            left2.setMode(defualtRunMode);
-            left3.setMode(defualtRunMode);
+            resetDriveMotorMode();
         }
 
         double pressTime = getRuntime();
 
         sleep(WAIT_BEFORE_READ);
 
-        if(front.red() == 0 && front.blue() == 0) // no need to test green because its useless :(
+        if(frontColor.red() == 0 && frontColor.blue() == 0) // no need to test green because its useless :(
         {
             telemetry.addData("Warning", "Not close enough to sense beacon color");
             telemetry.update();
         }
 
-        else if(front.red() == 255 && front.blue() == 255)
+        else if(frontColor.red() == 255 && frontColor.blue() == 255)
         {
             telemetry.addData("Error", "Color sensor is broken again");
             telemetry.update();
         }
 
-        else if((front.red() > front.blue() && colorWanted == Color.BLUE) || (front.blue() > front.red() && colorWanted == Color.RED))
+        else if((frontColor.red() > frontColor.blue() && colorWanted == Color.BLUE) || (frontColor.blue() > frontColor.red() && colorWanted == Color.RED))
         {
 
             if(verbose)
             {
-                colorTelemetry(front);
+                colorTelemetry(frontColor);
                 telemetry.update();
-                front.enableLed(true); // as a way to signel that it will go back in and press
+                frontColor.enableLed(true); // as a way to signel that it will go back in and press
             }
 
             move(speed, MOVE_BACK_DIST); // move back from wall
@@ -495,16 +420,11 @@ public abstract class LinearBase extends LinearOpMode{
         }
         else if(verbose) // if all else fails
         {
-            colorTelemetry(front);
+            colorTelemetry(frontColor);
             telemetry.update();
         }
 
         move(speed, MOVE_BACK_DIST); // move back from wall
-    }
-
-    public void turnBackTo(double maxSpeed, double deg) throws InterruptedException // TODO: Test turnBackTo
-    {
-        move(maxSpeed, deg - gyro.getIntegratedZValue());
     }
 
     public void shootThreaded()
@@ -550,6 +470,62 @@ public abstract class LinearBase extends LinearOpMode{
             move(speed, totalDist - distBeforeShoot);
     }
 
+    // Argument speed also determines direction. Positive moves forward, negative is backward. The ball sweeper is the front
+    public void moveParallelUntilLine(double speed)
+    {
+        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
+        {
+            setDriveMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+
+        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
+        {
+            resetDriveMotorMode();
+        }
+
+    }
+
+    public void pressColor(int colorWanted)
+    {
+        final double SPEED = 0.3; // This is going to be a constant so that all instances of this function run the same
+
+        if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
+        {
+            setDriveMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+
+        if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
+        {
+            resetDriveMotorMode();
+        }
+    }
+
+    //Made so that you can use this as the degree argument to a turning function and have the angle of the robot be corrected to be parallel to the wall
+    public double angleDifFromWall()
+    {
+        final int TEST_POS_COUNT = 5; // testing 5 different positions
+        final int FOV = 90; // The amount of degrees the servo could spin to see (make sure to test this)
+        double[][] values = new double[TEST_POS_COUNT][2]; // [x][0] is the servo position, and [x][1] is the value there
+
+        return 1; // Make sure to actually return something at the end
+
+    }
+
+    public void setDriveMotorMode(DcMotor.RunMode mode)
+    {
+        right1.setMode(mode);
+        right2.setMode(mode);
+        right3.setMode(mode);
+        left1.setMode(mode);
+        left2.setMode(mode);
+        left3.setMode(mode);
+    }
+
+    public void resetDriveMotorMode()
+    {
+        setDriveMotorMode(defualtRunMode);
+    }
+
     public void gyroTelemetry(ModernRoboticsI2cGyro sensorGyro)
     {
         telemetry.addData("Gyro: ", sensorGyro.getIntegratedZValue() + "");
@@ -578,5 +554,11 @@ public abstract class LinearBase extends LinearOpMode{
         telemetry.addData("Target Dist", motor.getTargetPosition());
         telemetry.addData("Is Busy", motor.isBusy()?"Yes":"No");
 
+    }
+
+    public void lightTelemetry(OpticalDistanceSensor odsSensor)
+    {
+        telemetry.addData("Raw",    odsSensor.getRawLightDetected());
+        telemetry.addData("Normal", odsSensor.getLightDetected());
     }
 }
