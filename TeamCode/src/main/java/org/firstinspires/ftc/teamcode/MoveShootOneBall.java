@@ -20,6 +20,6 @@ public class MoveShootOneBall extends LinearBase {
 
         Thread.sleep(10000);
 
-        turn(1, 180);
+        turn(MAX_TURN_SPEED, 180);
     }
 }
