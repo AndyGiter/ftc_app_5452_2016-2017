@@ -24,7 +24,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 public class BasicTeleop extends LinearBase {
 
     private double speedMod = 1;
-    private final double SLOW_MOD = 0.6; // 60% of normal speed
+    private boolean defaultSpeed = false; // true is to use MAX_SPEED, false is
+    private final double MAX_SPEED = 1;
+    private final double SUB_MAX_SPEED = 0.75;
+    private final double SLOW_MOD = 0.5; // 50% of normal speed
     private final double SUPER_SLOW_MOD = 0.3;
 
     private boolean press = false;
@@ -73,6 +76,12 @@ public class BasicTeleop extends LinearBase {
                 collector.setPower(0);
             }
 
+            if(gamepad1.y)
+            {
+                defaultSpeed = !defaultSpeed;
+                press = true;
+            }
+
             if(gamepad1.right_trigger > TRIGGER_THRESHOLD)
             {
                 speedMod = SUPER_SLOW_MOD;
@@ -84,7 +93,7 @@ public class BasicTeleop extends LinearBase {
             }
             else
             {
-                speedMod = 1;
+                speedMod = defaultSpeed?MAX_SPEED:SUB_MAX_SPEED;
             }
 
             right1.setPower(-1 * gamepad1.right_stick_y * speedMod);
