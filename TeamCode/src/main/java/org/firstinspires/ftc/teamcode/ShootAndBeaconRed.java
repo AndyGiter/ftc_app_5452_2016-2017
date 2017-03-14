@@ -16,7 +16,7 @@ public class ShootAndBeaconRed extends LinearBase {
         initalize(DcMotor.RunMode.RUN_TO_POSITION, true);
         waitForStart();
         Thread.sleep(100);
-        front.enableLed(true);
+        frontColor.enableLed(true);
 
         moveShootMove(-0.5, 1440*1.15, 1440*1.15);
 

@@ -33,6 +33,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Gyro Sensor
  * gyro: 0x20 // Default
  */
+
+//Opmode stuck in init_loop()
+//WHAT DOES IT MEAN
 public abstract class LinearBase extends LinearOpMode{
 
     DcMotor left1;
@@ -46,9 +49,8 @@ public abstract class LinearBase extends LinearOpMode{
     DcMotor collector;
 
     Servo sonarServo;
-    Servo pressServo;
-    //Servo funnelLeft;
-    //Servo funnelRight;
+    Servo rightArmServo;
+    Servo leftArmServo;
 
     ColorSensor frontColor;
 
@@ -116,28 +118,27 @@ public abstract class LinearBase extends LinearOpMode{
 
         resetDriveMotorMode(); // sets all the motors to the default runMode
 
-        sonarServo = hardwareMap.servo.get("sonar");
-        pressServo = hardwareMap.servo.get("press");
-
         collector.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         shooter.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        //Servo Setup
+        sonarServo = hardwareMap.servo.get("sonar");
+        rightArmServo = hardwareMap.servo.get("rightArm");
+        leftArmServo = hardwareMap.servo.get("leftArm");
+
+
         //Color Sensor Setup
         frontColor = hardwareMap.colorSensor.get("front");
 
-        frontColor.setI2cAddress(i2cAddrFrontColor);
+        frontColor.setI2cAddress(i2cAddrFrontColor); // TODO: Set the color back to the default address bc we only have 1
 
         frontRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "frontRange");
         sonarRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sonarRange");
-        complementaryRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "complementaryRange");
 
         frontRange.setI2cAddress(i2cAddrFrontRange);
         sonarRange.setI2cAddress(i2cAddrSonarRange);
-        complementaryRange.setI2cAddress(i2cAddrConplementaryRange);
-
-        lightBottom = hardwareMap.opticalDistanceSensor.get("light");
 
         // Setting the deadzone for the gamepads
         gamepad1.setJoystickDeadzone(DEADZONE);
@@ -470,42 +471,26 @@ public abstract class LinearBase extends LinearOpMode{
             move(speed, totalDist - distBeforeShoot);
     }
 
-    // Argument speed also determines direction. Positive moves forward, negative is backward. The ball sweeper is the front
-    public void moveParallelUntilLine(double speed)
-    {
-        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
-        {
-            setDriveMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-
-        if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
-        {
-            resetDriveMotorMode();
-        }
-
-    }
-
-    public void pressColor(int colorWanted)
-    {
-        final double SPEED = 0.3; // This is going to be a constant so that all instances of this function run the same
-
-        if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
-        {
-            setDriveMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-        }
-
-        if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION)
-        {
-            resetDriveMotorMode();
-        }
-    }
-
     //Made so that you can use this as the degree argument to a turning function and have the angle of the robot be corrected to be parallel to the wall
-    public double angleDifFromWall()
+    //Assumes the range of the servo to be between 1 and 0 and 0.3 and 0.8 turn the same amount of degrees from 0.5 for example
+    public double angleDifFromWall() throws InterruptedException
     {
-        final int TEST_POS_COUNT = 5; // testing 5 different positions
-        final int FOV = 90; // The amount of degrees the servo could spin to see (make sure to test this)
-        double[][] values = new double[TEST_POS_COUNT][2]; // [x][0] is the servo position, and [x][1] is the value there
+        final int FOV = 90; // The amount of degrees the servo could spin to see TODO: Test sonar FOV
+        double[][] values = {{0.1,},{0.3,},{0.5,},{0.7,},{0.9,}}; // [x][0] is the servo position, and [x][1] is the value there
+        int lowestReadValue=0; // lowest read position in the values array
+        final int WAIT_BEFORE_READ = 100; // TODO: Find lowest wait before read time on sonar
+
+        for(int i = 0; i<values.length-1; i++)
+        {
+            sonarServo.setPosition(values[i][0]);
+            Thread.sleep(WAIT_BEFORE_READ);
+            values[i][1] = sonarRange.getDistance(DistanceUnit.CM);
+
+            if(values[i][1] < values[lowestReadValue][1])
+            {
+                lowestReadValue = i;
+            }
+        }
 
         return 1; // Make sure to actually return something at the end
 
@@ -556,7 +541,7 @@ public abstract class LinearBase extends LinearOpMode{
 
     }
 
-    public void lightTelemetry(OpticalDistanceSensor odsSensor)
+    public void odsTelemetry(OpticalDistanceSensor odsSensor)
     {
         telemetry.addData("Raw",    odsSensor.getRawLightDetected());
         telemetry.addData("Normal", odsSensor.getLightDetected());
