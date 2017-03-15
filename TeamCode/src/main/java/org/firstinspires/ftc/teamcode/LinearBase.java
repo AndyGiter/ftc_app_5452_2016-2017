@@ -473,7 +473,7 @@ public abstract class LinearBase extends LinearOpMode{
 
     //Made so that you can use this as the degree argument to a turning function and have the angle of the robot be corrected to be parallel to the wall
     //Assumes the range of the servo to be between 1 and 0 and 0.3 and 0.8 turn the same amount of degrees from 0.5 for example
-    public double angleDifFromWall() throws InterruptedException
+    public double sonarPresetScan() throws InterruptedException
     {
         final int FOV = 90; // The amount of degrees the servo could spin to see TODO: Test sonar FOV
         double[][] values = {{0.1,},{0.3,},{0.5,},{0.7,},{0.9,}}; // [x][0] is the servo position, and [x][1] is the value there
@@ -494,6 +494,63 @@ public abstract class LinearBase extends LinearOpMode{
 
         return 1; // Make sure to actually return something at the end
 
+    }
+
+    // Look into how to create a line (parabola?) of best fit
+    public double sonarSmartScan() throws InterruptedException
+    {
+        double[][] values = new double[3][2];
+        double currentServoPos = sonarServo.getPosition()>0.5?1:0; // move the servo to the closest max position
+        double currentDist;
+        final double START_SERVO_POS = currentServoPos;
+        final double CHANGE_RATE = 0.05;
+        final int WAIT_BEFORE_READ = 100;
+
+        sonarServo.setPosition(currentServoPos);
+        values[0][0] = currentServoPos;
+
+        Thread.sleep(WAIT_BEFORE_READ);
+
+        values[0][1] = sonarRange.getDistance(DistanceUnit.CM);
+
+        do {
+            if(START_SERVO_POS == 1 && currentServoPos >= CHANGE_RATE)
+            {
+                currentServoPos -= CHANGE_RATE;
+            }
+            else if(START_SERVO_POS == 0 && currentServoPos <= 1-CHANGE_RATE)
+            {
+                currentServoPos += CHANGE_RATE;
+            }
+            else
+            {
+                telemetry.addData("Error", "Reached end of range without finding larger value");
+                telemetry.update();
+
+                break;
+            }
+
+            sonarServo.setPosition(currentServoPos);
+
+            Thread.sleep(WAIT_BEFORE_READ);
+
+            currentDist = sonarRange.getDistance(DistanceUnit.CM);
+
+            if(currentDist < values[1][1])
+            {
+                values[0] = values[1];
+                values[1][0] = currentServoPos;
+                values[1][1] = currentDist;
+            }
+            else // This should end the loop
+            {
+                values[2][0] = currentServoPos;
+                values[2][1] = currentDist;
+            }
+
+        } while(opModeIsActive() && !(values[0][1] > values[1][1] && values[2][1] > values[1][1])); // while the middle values is not the lowest
+
+        return 1;
     }
 
     public void setDriveMotorMode(DcMotor.RunMode mode)
