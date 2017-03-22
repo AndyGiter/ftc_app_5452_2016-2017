@@ -52,9 +52,19 @@ public abstract class LinearBase extends LinearOpMode{
     Servo rightArmServo;
     Servo leftArmServo;
 
+    final double SONAR_INIT_POS = 0.12;
+
+    final double ARM_INIT_POS  = 1; // back so it fits in the cube
+    final double ARM_START_POS = 0; // forward so it can move the ball
+    final double ARM_UP_POS    = 0.5;
+
+    private final double[] SONAR_MINMAX = {0,1};
+    private final double[] RIGHT_ARM_MINMAX = {0,1};
+    private final double[] LEFT_ARM_MINMAX = {0,1};
+
     ColorSensor frontColor;
 
-    private I2cAddr i2cAddrFrontColor = I2cAddr.create8bit(0x4c);
+    private I2cAddr i2cAddrFrontColor = I2cAddr.create8bit(0x3c); // Default for color
 
     DigitalChannel touch;
 
@@ -62,13 +72,9 @@ public abstract class LinearBase extends LinearOpMode{
 
     ModernRoboticsI2cRangeSensor frontRange; // The range sensor on the front of the robot
     ModernRoboticsI2cRangeSensor sonarRange; // The range sensor under the side button presser
-    ModernRoboticsI2cRangeSensor complementaryRange; // The range sensor thats also on the side with pressRange, but not under the side button pressor
 
-    private I2cAddr i2cAddrFrontRange = I2cAddr.create8bit(0x28); // default I2C address for the range sensor
-    private I2cAddr i2cAddrSonarRange = I2cAddr.create8bit(0x4c);
-    private I2cAddr i2cAddrConplementaryRange = I2cAddr.create8bit(0x4c);
-
-    OpticalDistanceSensor lightBottom;
+    private I2cAddr i2cAddrFrontRange = I2cAddr.create8bit(0x28); // might also be 0x18 //  default I2C address for the range sensor
+    private I2cAddr i2cAddrSonarRange = I2cAddr.create8bit(0x38);
 
     DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
@@ -124,10 +130,17 @@ public abstract class LinearBase extends LinearOpMode{
         shooter.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //Servo Setup
-        sonarServo = hardwareMap.servo.get("sonar");
-        rightArmServo = hardwareMap.servo.get("rightArm");
-        leftArmServo = hardwareMap.servo.get("leftArm");
+        sonarServo    = hardwareMap.servo.get("sonar");
+        rightArmServo = hardwareMap.servo.get("right");
+        leftArmServo  = hardwareMap.servo.get("left");
 
+        sonarServo   .scaleRange(SONAR_MINMAX[0],     SONAR_MINMAX[1]);
+        rightArmServo.scaleRange(RIGHT_ARM_MINMAX[0], RIGHT_ARM_MINMAX[1]);
+        leftArmServo .scaleRange(LEFT_ARM_MINMAX[0],  LEFT_ARM_MINMAX[1]);
+
+        sonarServo.setPosition(SONAR_INIT_POS);
+        rightArmServo.setPosition(1); // TODO: Make better constants for these
+        leftArmServo.setPosition(0);
 
         //Color Sensor Setup
         frontColor = hardwareMap.colorSensor.get("front");
@@ -576,9 +589,6 @@ public abstract class LinearBase extends LinearOpMode{
 
     public void rangeTelemety(ModernRoboticsI2cRangeSensor rangeSensor)
     {
-        telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
-        telemetry.addData("raw optical", rangeSensor.rawOptical());
-        telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
         telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM)); // what to use
     }
 
