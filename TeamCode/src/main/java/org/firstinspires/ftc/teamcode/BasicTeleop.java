@@ -15,10 +15,17 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  *  Right Bumper: Collect balls
  *  Left Bumper: Push out balls
  *  Right Trigger: Super slow mode (30% Speed)
- *  Left Trigger: Slow Mode (60% Speed)
+ *  Left Trigger: Slow Mode (50% Speed)
+ *  Y: Toggle default speed
  *  Right Stick (up and down): Right motors forwards and backwards
  *  Left Stick (up and down): Left Motors forwards and backwards
  */
+
+/*
+* Two Controller scheme (if implemented)
+* Move collecting and shooting to gamepad2
+* Change slowmode to bumpers
+* */
 
 @TeleOp(name="New Teleop", group="Teleop")
 public class BasicTeleop extends LinearBase {
@@ -106,9 +113,6 @@ public class BasicTeleop extends LinearBase {
             telemetry.addData("Current Speed Mod", (speedMod*100)+"%");
             if(verbose)
             {
-                telemetry.addData("Shooter is busy?", shooter.isBusy()?"Yes":"No");
-                telemetry.addData("Current Shooter Pos", shooter.getCurrentPosition()+" deg.");
-                telemetry.addData("Shooter Target Pos", shooter.getTargetPosition()+" deg.");
                 telemetry.addData("A button pressed?", gamepad1.a?"Yes" : "No");
                 telemetry.addData("Touch Sensor pressed?", touch.getState()?"Yes":"No");
                 telemetry.addData("Shooter Spin Thread Running", running?"Yes":"No");
