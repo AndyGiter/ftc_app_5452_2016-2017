@@ -16,7 +16,7 @@ public class MoveShoot extends LinearBase {
         waitForStart();
         Thread.sleep(100);
 
-        moveShootMove(-0.5, 1440 * 1.6, 1440 * 1.6);
+        moveShootMove(-0.5, 1440 * 1.8, 1440 * 1.8);
 
         Thread.sleep(10000);
 

@@ -23,12 +23,16 @@ public class ShootAndBeaconBlue extends LinearBase {
 
         turn(0.3, -45); // turn right 45
 
-        move(-0.7, 1440 * 1.7); // the diag
+        move(-0.7, 1440 * 1.4); // the diag
 
         turn(0.45, 133); // turn to face the button
 
         pressAndTest(0.4, Color.BLUE);
 
-        move(-0.5, 1440 * 2.5);
+        move(-0.5, 1440 * 2);
+
+        turn(0.5, 180);
+
+        move(0.5, 1440 * 0.5);
     }
 }
