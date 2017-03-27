@@ -34,8 +34,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * gyro: 0x20 // Default
  */
 
-//Opmode stuck in init_loop()
-//WHAT DOES IT MEAN
 public abstract class LinearBase extends LinearOpMode{
 
     DcMotor left1;
@@ -70,11 +68,13 @@ public abstract class LinearBase extends LinearOpMode{
 
     ModernRoboticsI2cGyro gyro; // Default I2C address 0x20
 
-    ModernRoboticsI2cRangeSensor frontRange; // The range sensor on the front of the robot
-    ModernRoboticsI2cRangeSensor sonarRange; // The range sensor under the side button presser
+    private I2cAddr i2cAddrGyro = I2cAddr.create8bit(0x20);
 
-    private I2cAddr i2cAddrFrontRange = I2cAddr.create8bit(0x28); // might also be 0x18 //  default I2C address for the range sensor
-    private I2cAddr i2cAddrSonarRange = I2cAddr.create8bit(0x38);
+    ModernRoboticsI2cRangeSensor frontRange; // The range sensor on the front of the robot
+    ModernRoboticsI2cRangeSensor sonarRange; // The range sensor under the side button presser DOESNT WORK
+
+    private I2cAddr i2cAddrFrontRange = I2cAddr.create8bit(0x28);
+    private I2cAddr i2cAddrSonarRange = I2cAddr.create8bit(0x10);
 
     DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
@@ -97,6 +97,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         // Gyro (this comes first so we can do other things, like initalizing other things, while this calibrates.)
         gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("gyro");
+        gyro.setI2cAddress(i2cAddrGyro);
         gyro.calibrate();
 
         // Touch Sensor Setup
@@ -134,18 +135,14 @@ public abstract class LinearBase extends LinearOpMode{
         rightArmServo = hardwareMap.servo.get("right");
         leftArmServo  = hardwareMap.servo.get("left");
 
-        sonarServo   .scaleRange(SONAR_MINMAX[0],     SONAR_MINMAX[1]);
+        sonarServo   .scaleRange(SONAR_MINMAX[0], SONAR_MINMAX[1]);
         rightArmServo.scaleRange(RIGHT_ARM_MINMAX[0], RIGHT_ARM_MINMAX[1]);
-        leftArmServo .scaleRange(LEFT_ARM_MINMAX[0],  LEFT_ARM_MINMAX[1]);
-
-        sonarServo.setPosition(SONAR_INIT_POS);
-        rightArmServo.setPosition(1); // TODO: Make better constants for these
-        leftArmServo.setPosition(0);
+        leftArmServo .scaleRange(LEFT_ARM_MINMAX[0], LEFT_ARM_MINMAX[1]);
 
         //Color Sensor Setup
         frontColor = hardwareMap.colorSensor.get("front");
 
-        frontColor.setI2cAddress(i2cAddrFrontColor); // TODO: Set the color back to the default address bc we only have 1
+        frontColor.setI2cAddress(i2cAddrFrontColor);
 
         frontRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "frontRange");
         sonarRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sonarRange");
@@ -186,6 +183,21 @@ public abstract class LinearBase extends LinearOpMode{
         defualtRunMode = newDefualtRunMode;
         verbose = newVerbose;
         initalize();
+    }
+
+    public void servoPosInit()
+    {
+        sonarServo.setPosition(SONAR_INIT_POS);
+        rightArmServo.setPosition(1); // TODO: Make better constants for these
+        leftArmServo.setPosition(0);
+    }
+
+    public void initAndWait(DcMotor.RunMode newDefault, boolean newVerbose) throws InterruptedException
+    {
+        initalize(newDefault, newVerbose);
+        waitForStart();
+        servoPosInit();
+        Thread.sleep(100);
     }
 
     public void move(double speed, double distance) throws InterruptedException
@@ -463,6 +475,15 @@ public abstract class LinearBase extends LinearOpMode{
         }
     }
 
+    public void shoot() throws InterruptedException
+    {
+        shooter.setPower(0.9);
+
+        Thread.sleep(500);
+
+        shooter.setPower(0);
+    }
+
     public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
     {
         final int WAIT_TIME = 250;
@@ -479,6 +500,25 @@ public abstract class LinearBase extends LinearOpMode{
         shootThreaded();
 
         Thread.sleep(WAIT_TIME); // time for it to shoot
+
+        if(distBeforeShoot < totalDist)
+            move(speed, totalDist - distBeforeShoot);
+    }
+
+    public void moveShootMoveUnThreaded(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
+    {
+        final int WAIT_TIME = 250;
+
+        if(distBeforeShoot > totalDist)
+        {
+            telemetry.addData("Warning", "Please use moveShootMove correctly, function may act weird");
+            telemetry.update();
+        }
+
+        if(distBeforeShoot != 0)
+            move(speed, distBeforeShoot);
+
+        shoot();
 
         if(distBeforeShoot < totalDist)
             move(speed, totalDist - distBeforeShoot);
