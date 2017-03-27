@@ -8,15 +8,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * Created by mlowery2 on 1/11/2017.
  */
 
-@Autonomous(name = "Shoot and Beacon, RED SIDE", group ="auto")
-public class ShootAndBeaconRed extends LinearBase {
+@Autonomous(name = "One Beacon & Ball, RED SIDE", group ="auto")
+public class BeaconBallRed extends LinearBase {
 
     public void runOpMode() throws InterruptedException
     {
-        initalize(DcMotor.RunMode.RUN_TO_POSITION, true);
-        waitForStart();
-        Thread.sleep(100);
-        frontColor.enableLed(true);
+        initAndWait(DcMotor.RunMode.RUN_TO_POSITION, true);
 
         moveShootMove(-0.5, 1440*1.15, 1440*1.15);
 
