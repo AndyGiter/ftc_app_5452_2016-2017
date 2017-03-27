@@ -31,7 +31,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 public class BasicTeleop extends LinearBase {
 
     private double speedMod = 1;
-    private boolean defaultSpeed = false; // true is to use MAX_SPEED, false is
+    private boolean defaultSpeed = false; // true is to use MAX_SPEED, false is SUB_MAX_SPEED
     private final double MAX_SPEED = 1;
     private final double SUB_MAX_SPEED = 0.75;
     private final double SLOW_MOD = 0.5; // 50% of normal speed
@@ -45,9 +45,7 @@ public class BasicTeleop extends LinearBase {
     public void runOpMode() throws InterruptedException
     {
 
-        initalize(DcMotor.RunMode.RUN_USING_ENCODER);
-        waitForStart();
-        Thread.sleep(100);
+        initAndWait(DcMotor.RunMode.RUN_USING_ENCODER, false);
 
         while(opModeIsActive())
         {

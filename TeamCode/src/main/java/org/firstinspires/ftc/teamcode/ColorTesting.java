@@ -21,10 +21,8 @@ public class ColorTesting extends LinearBase {
 
     public void runOpMode() throws InterruptedException
     {
-        initalize(DcMotor.RunMode.RUN_TO_POSITION, true);
+        initAndWait(DcMotor.RunMode.RUN_TO_POSITION, true);
         frontColor.enableLed(ledState);
-        waitForStart();
-        sleep(100);
 
         while(opModeIsActive())
         {

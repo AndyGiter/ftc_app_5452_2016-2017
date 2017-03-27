@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /**
  * Created by mlowery2 on 3/22/2017.
@@ -11,14 +14,12 @@ public class SensorTester extends LinearBase{
 
     public void runOpMode() throws InterruptedException
     {
-        initalize(true);
-        waitForStart();
-        Thread.sleep(100);
+        initAndWait(DcMotor.RunMode.RUN_TO_POSITION, true);
 
         while(opModeIsActive())
         {
-            rangeTelemety(sonarRange);
-            rangeTelemety(frontRange);
+            telemetry.addData("cm", "%.2f cm", frontRange.getDistance(DistanceUnit.CM));
+            telemetry.addData("cm", "%.2f cm", sonarRange.getDistance(DistanceUnit.CM));
             telemetry.update();
         }
     }

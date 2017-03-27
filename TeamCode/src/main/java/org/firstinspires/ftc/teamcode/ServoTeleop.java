@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
@@ -19,10 +20,10 @@ public class ServoTeleop extends LinearBase {
     boolean press = false;
 
     public void runOpMode() throws InterruptedException {
-        initalize(true);
-        servo = sonarServo; // where to change what servo is moved
-        waitForStart();
-        Thread.sleep(100);
+
+        initAndWait(DcMotor.RunMode.RUN_TO_POSITION, true);
+
+        servo = leftArmServo; // where to change what servo is moved
 
         while (opModeIsActive())
         {

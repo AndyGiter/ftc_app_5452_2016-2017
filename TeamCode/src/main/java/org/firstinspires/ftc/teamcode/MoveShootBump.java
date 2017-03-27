@@ -12,14 +12,10 @@ public class MoveShootBump extends LinearBase {
 
     public void runOpMode() throws InterruptedException
     {
-        initalize(DcMotor.RunMode.RUN_TO_POSITION, true);
-        waitForStart();
-        Thread.sleep(100);
+        initAndWait(DcMotor.RunMode.RUN_TO_POSITION, true);
 
-        moveShootMove(-0.5, 1440 * 1.8, 1440 * 1.8);
+        Thread.sleep(17500);
 
-        Thread.sleep(17500); // to give allies time to move
-
-        move(-0.5, 1440 * 1.05);
+        moveShootMove(-0.5, 1440 * 1.8, 1440 * 2.85);
     }
 }
