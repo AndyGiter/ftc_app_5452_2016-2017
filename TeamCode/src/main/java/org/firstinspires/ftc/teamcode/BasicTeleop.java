@@ -104,9 +104,9 @@ public class BasicTeleop extends LinearBase {
             right1.setPower(-1 * gamepad1.right_stick_y * speedMod);
             right2.setPower(-1 * gamepad1.right_stick_y * speedMod);
             right3.setPower(-1 * gamepad1.right_stick_y * speedMod);
-            left1.setPower(-1 * gamepad1.left_stick_y * speedMod);
-            left2.setPower(-1 * gamepad1.left_stick_y * speedMod);
-            left3.setPower(-1 * gamepad1.left_stick_y * speedMod);
+            left1 .setPower(-1 * gamepad1.left_stick_y  * speedMod);
+            left2 .setPower(-1 * gamepad1.left_stick_y  * speedMod);
+            left3 .setPower(-1 * gamepad1.left_stick_y  * speedMod);
 
             telemetry.addData("Current Speed Mod", (speedMod*100)+"%");
             if(verbose)
