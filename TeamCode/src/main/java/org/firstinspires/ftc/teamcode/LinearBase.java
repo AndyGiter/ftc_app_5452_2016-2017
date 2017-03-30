@@ -154,14 +154,14 @@ public abstract class LinearBase extends LinearOpMode{
         gamepad1.setJoystickDeadzone(DEADZONE);
         gamepad2.setJoystickDeadzone(DEADZONE);
 
-        if(verbose){telemetry.addData("Done: ","Everything but gyro. Took " + (getRuntime()-start) + " seconds"); telemetry.update();}
+        if(verbose){telemetry.addData("Done: ","Everything but gyro. Took %.2f seconds", (getRuntime()-start)); telemetry.update();}
 
         while (!isStopRequested() && gyro.isCalibrating())  { // Make sure that the gyro is calibrated
             Thread.sleep(50);
         }
 
 
-        if(verbose){telemetry.addData("Done: ","Initalizing. Took " + (getRuntime()-start) + " seconds"); telemetry.update();}
+        if(verbose){telemetry.addData("Done: ","Initalizing. Took %.2f seconds", (getRuntime()-start)); telemetry.update();}
         else{telemetry.addData("Done", "Initalizing"); telemetry.update();}
 
         frontColor.enableLed(false);
