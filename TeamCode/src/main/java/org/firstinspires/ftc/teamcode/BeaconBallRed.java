@@ -25,11 +25,11 @@ public class BeaconBallRed extends LinearBase {
 
         pressAndTest(0.4, Color.RED);
 
-        move(-0.5, 1440*2);
+        //move(-0.5, 1440*2);
 
-        turn(0.5, -180);
+        //turn(0.5, -180);
 
-        move(0.5, 1440 * 0.5);
+        //move(0.5, 1440 * 0.5);
     }
 }
 
