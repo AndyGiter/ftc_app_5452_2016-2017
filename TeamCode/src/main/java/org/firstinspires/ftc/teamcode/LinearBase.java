@@ -7,32 +7,18 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
  // Moving parts
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DigitalChannelController;
-import com.qualcomm.robotcore.hardware.Servo;
 
  // Misc.
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.util.Range;
 import android.graphics.Color;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
-/**
- * Created by mlowery2 on 11/8/2016.
- *
- * I2C address checklist:
- *
- * Color Sensors
- * front: 0x4c
- *
- * Gyro Sensor
- * gyro: 0x20 // Default
- */
 
 public abstract class LinearBase extends LinearOpMode{
 
@@ -45,20 +31,6 @@ public abstract class LinearBase extends LinearOpMode{
 
     DcMotor shooter;
     DcMotor collector;
-
-    Servo sonarServo;
-    Servo rightArmServo;
-    Servo leftArmServo;
-
-    final double SONAR_INIT_POS = 0.12;
-
-    final double ARM_INIT_POS  = 1; // back so it fits in the cube
-    final double ARM_START_POS = 0; // forward so it can move the ball
-    final double ARM_UP_POS    = 0.5;
-
-    private final double[] SONAR_MINMAX = {0,1};
-    private final double[] RIGHT_ARM_MINMAX = {0,1};
-    private final double[] LEFT_ARM_MINMAX = {0,1};
 
     ColorSensor frontColor;
 
@@ -76,14 +48,15 @@ public abstract class LinearBase extends LinearOpMode{
     private I2cAddr i2cAddrFrontRange = I2cAddr.create8bit(0x28);
     private I2cAddr i2cAddrSonarRange = I2cAddr.create8bit(0x10);
 
-    DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
+    private DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
+    //TODO: Investigate why that controller broke at supers and maybe change the deadzone system to just be set were ever the joystick is when init
     private final float DEADZONE = 0.200f;
 
     boolean verbose = false;
 
-    final double MAX_MOVE_SPEED = 0.85; // YEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHH
-    final double MAX_TURN_SPEED = 0.3; // You spin me right round baby, right round
+    final double MAX_MOVE_SPEED = 0.5;
+    final double MAX_TURN_SPEED = 0.5; // You spin me right round baby, right round
 
     final int END_WAIT = 200;
 
@@ -119,25 +92,12 @@ public abstract class LinearBase extends LinearOpMode{
         right3.setDirection(DcMotor.Direction.REVERSE);
         left2.setDirection(DcMotor.Direction.REVERSE); // (Crazy Train) https://www.youtube.com/watch?v=RMR5zf1J1Hs
 
-        setDriveMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Resets the encoders on the motors
-
-        Thread.sleep(150);
-
-        resetDriveMotorMode(); // sets all the motors to the default runMode
+        resetEncoders(); // Resets the encoders and sets the mode to the default runmode
 
         collector.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         shooter.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        //Servo Setup
-        sonarServo    = hardwareMap.servo.get("sonar");
-        rightArmServo = hardwareMap.servo.get("right");
-        leftArmServo  = hardwareMap.servo.get("left");
-
-        sonarServo   .scaleRange(SONAR_MINMAX[0], SONAR_MINMAX[1]);
-        rightArmServo.scaleRange(RIGHT_ARM_MINMAX[0], RIGHT_ARM_MINMAX[1]);
-        leftArmServo .scaleRange(LEFT_ARM_MINMAX[0], LEFT_ARM_MINMAX[1]);
 
         //Color Sensor Setup
         frontColor = hardwareMap.colorSensor.get("front");
@@ -185,18 +145,17 @@ public abstract class LinearBase extends LinearOpMode{
         initalize();
     }
 
-    public void servoPosInit()
-    {
-        sonarServo.setPosition(SONAR_INIT_POS);
-        rightArmServo.setPosition(1); // TODO: Make better constants for these
-        leftArmServo.setPosition(0);
-    }
-
+    /*
+    * @depricated
+    * The only reason I had this function was to make sure that the servos were properly initialised because they could
+    * only be initialised after the match started or else the robot would be outside the 18 in cube. Now that we have removed
+    * all the servos, there is no reason to initalize the robot like this.
+    * */
+    @Deprecated
     public void initAndWait(DcMotor.RunMode newDefault, boolean newVerbose) throws InterruptedException
     {
         initalize(newDefault, newVerbose);
         waitForStart();
-        servoPosInit();
         Thread.sleep(100);
     }
 
@@ -359,9 +318,8 @@ public abstract class LinearBase extends LinearOpMode{
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
         {
             setDriveMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            Thread.sleep(100);
         }
-
-        Thread.sleep(100);
 
         // move into beacon
         right1.setPower(speed);
@@ -461,7 +419,7 @@ public abstract class LinearBase extends LinearOpMode{
                 public void run() {
                     running = true;
 
-                    shooter.setPower(0.9);
+                    shooter.setPower(0.75);
 
                     while(touch.getState() && opModeIsActive()){}
 
@@ -475,6 +433,11 @@ public abstract class LinearBase extends LinearOpMode{
         }
     }
 
+    /*
+    * @Depricated
+    * Depricated because there is shootThreaded() which shoots and recocks with nonblocking code
+    * */
+    @Deprecated
     public void shoot() throws InterruptedException
     {
         shooter.setPower(0.9);
@@ -505,120 +468,33 @@ public abstract class LinearBase extends LinearOpMode{
             move(speed, totalDist - distBeforeShoot);
     }
 
-    public void moveShootMoveUnThreaded(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
-    {
-        final int WAIT_TIME = 250;
-
-        if(distBeforeShoot > totalDist)
-        {
-            telemetry.addData("Warning", "Please use moveShootMove correctly, function may act weird");
-            telemetry.update();
-        }
-
-        if(distBeforeShoot != 0)
-            move(speed, distBeforeShoot);
-
-        shoot();
-
-        if(distBeforeShoot < totalDist)
-            move(speed, totalDist - distBeforeShoot);
-    }
-
-    //Made so that you can use this as the degree argument to a turning function and have the angle of the robot be corrected to be parallel to the wall
-    //Assumes the range of the servo to be between 1 and 0 and 0.3 and 0.8 turn the same amount of degrees from 0.5 for example
-    public double sonarPresetScan() throws InterruptedException
-    {
-        final int FOV = 90; // The amount of degrees the servo could spin to see TODO: Test sonar FOV
-        double[][] values = {{0.1,},{0.3,},{0.5,},{0.7,},{0.9,}}; // [x][0] is the servo position, and [x][1] is the value there
-        int lowestReadValue=0; // lowest read position in the values array
-        final int WAIT_BEFORE_READ = 100; // TODO: Find lowest wait before read time on sonar
-
-        for(int i = 0; i<values.length-1; i++)
-        {
-            sonarServo.setPosition(values[i][0]);
-            Thread.sleep(WAIT_BEFORE_READ);
-            values[i][1] = sonarRange.getDistance(DistanceUnit.CM);
-
-            if(values[i][1] < values[lowestReadValue][1])
-            {
-                lowestReadValue = i;
-            }
-        }
-
-        return 1; // Make sure to actually return something at the end
-
-    }
-
-    // Look into how to create a line (parabola?) of best fit
-    public double sonarSmartScan() throws InterruptedException
-    {
-        double[][] values = new double[3][2];
-        double currentServoPos = sonarServo.getPosition()>0.5?1:0; // move the servo to the closest max position
-        double currentDist;
-        final double START_SERVO_POS = currentServoPos;
-        final double CHANGE_RATE = 0.05;
-        final int WAIT_BEFORE_READ = 100;
-
-        sonarServo.setPosition(currentServoPos);
-        values[0][0] = currentServoPos;
-
-        Thread.sleep(WAIT_BEFORE_READ);
-
-        values[0][1] = sonarRange.getDistance(DistanceUnit.CM);
-
-        do {
-            if(START_SERVO_POS == 1 && currentServoPos >= CHANGE_RATE)
-            {
-                currentServoPos -= CHANGE_RATE;
-            }
-            else if(START_SERVO_POS == 0 && currentServoPos <= 1-CHANGE_RATE)
-            {
-                currentServoPos += CHANGE_RATE;
-            }
-            else
-            {
-                telemetry.addData("Error", "Reached end of range without finding larger value");
-                telemetry.update();
-
-                break;
-            }
-
-            sonarServo.setPosition(currentServoPos);
-
-            Thread.sleep(WAIT_BEFORE_READ);
-
-            currentDist = sonarRange.getDistance(DistanceUnit.CM);
-
-            if(currentDist < values[1][1])
-            {
-                values[0] = values[1];
-                values[1][0] = currentServoPos;
-                values[1][1] = currentDist;
-            }
-            else // This should end the loop
-            {
-                values[2][0] = currentServoPos;
-                values[2][1] = currentDist;
-            }
-
-        } while(opModeIsActive() && !(values[0][1] > values[1][1] && values[2][1] > values[1][1])); // while the middle values is not the lowest
-
-        return 1;
-    }
-
     public void setDriveMotorMode(DcMotor.RunMode mode)
     {
         right1.setMode(mode);
-        right2.setMode(mode);
+        right2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Set to this so we don't blow fuses
         right3.setMode(mode);
         left1.setMode(mode);
-        left2.setMode(mode);
+        left2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Set to this so we don't blow fuses
         left3.setMode(mode);
     }
 
     public void resetDriveMotorMode()
     {
         setDriveMotorMode(defualtRunMode);
+    }
+
+    public void resetEncoders() throws InterruptedException
+    {
+        right1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        Thread.sleep(100);
+
+        resetDriveMotorMode();
     }
 
     public void gyroTelemetry(ModernRoboticsI2cGyro sensorGyro)
@@ -646,11 +522,5 @@ public abstract class LinearBase extends LinearOpMode{
         telemetry.addData("Target Dist", motor.getTargetPosition());
         telemetry.addData("Is Busy", motor.isBusy()?"Yes":"No");
 
-    }
-
-    public void odsTelemetry(OpticalDistanceSensor odsSensor)
-    {
-        telemetry.addData("Raw",    odsSensor.getRawLightDetected());
-        telemetry.addData("Normal", odsSensor.getLightDetected());
     }
 }
