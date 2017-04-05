@@ -183,10 +183,8 @@ public abstract class LinearBase extends LinearOpMode{
         {speed *= -1;}
 
         right1.setTargetPosition((int) (right1.getCurrentPosition() + distance));
-        right2.setTargetPosition((int) (right2.getCurrentPosition() + distance));
         right3.setTargetPosition((int) (right3.getCurrentPosition() + distance));
         left1.setTargetPosition((int) (left1.getCurrentPosition() + distance));
-        left2.setTargetPosition((int) (left2.getCurrentPosition() + distance));
         left3.setTargetPosition((int) (left3.getCurrentPosition() + distance));
 
         Thread.sleep(WAIT_BEFORE_MOVE);
@@ -198,11 +196,10 @@ public abstract class LinearBase extends LinearOpMode{
         right3.setPower(speed);
         left3.setPower(speed);
 
-        while(opModeIsActive() && right1.isBusy() &&
-                right2.isBusy() &&
+        while(opModeIsActive() &&
+                right1.isBusy() &&
                 right3.isBusy() &&
                 left1.isBusy()  &&
-                left2.isBusy()  &&
                 left3.isBusy()){
             Thread.sleep(50);
 
