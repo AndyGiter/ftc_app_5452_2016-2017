@@ -16,6 +16,6 @@ public class MoveShootBump extends LinearBase {
 
         Thread.sleep(17500);
 
-        moveShootMove(-0.5, 1440 * 1.8, 1440 * 2.85);
+        moveShootMove(-0.3, 1440 * 2.85, 1440 * 1.8);
     }
 }

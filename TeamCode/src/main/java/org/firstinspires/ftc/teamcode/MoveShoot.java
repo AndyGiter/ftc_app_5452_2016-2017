@@ -16,7 +16,7 @@ public class MoveShoot extends LinearBase {
 
         Thread.sleep(10000);
 
-        moveShootMove(-0.5, 1440 * 1.8, 1440 * 1.8);
+        moveShootMove(-0.3, 1440 * 1.8, 1440 * 1.8);
 
         turn(MAX_TURN_SPEED, 180);
     }

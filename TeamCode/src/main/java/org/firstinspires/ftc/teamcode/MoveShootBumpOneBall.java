@@ -15,6 +15,6 @@ public class MoveShootBumpOneBall extends LinearBase {
 
         Thread.sleep(17500); // to give allies time to move
 
-        moveShootMove(-0.75, 1440 * 1.6, 1440 * 2.85);
+        moveShootMove(-0.3, 1440 * 2.85, 1440 * 1.3);
     }
 }
