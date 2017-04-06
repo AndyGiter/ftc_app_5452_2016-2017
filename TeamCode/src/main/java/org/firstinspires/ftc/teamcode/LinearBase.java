@@ -43,7 +43,7 @@ public abstract class LinearBase extends LinearOpMode{
     private I2cAddr i2cAddrGyro = I2cAddr.create8bit(0x20);
 
     ModernRoboticsI2cRangeSensor frontRange; // The range sensor on the front of the robot
-    ModernRoboticsI2cRangeSensor sonarRange; // The range sensor under the side button presser DOESNT WORK
+    ModernRoboticsI2cRangeSensor sonarRange; // The range sensor under the side button presser DOESNT WORK TODO: Remove this and all instances of it
 
     private I2cAddr i2cAddrFrontRange = I2cAddr.create8bit(0x28);
     private I2cAddr i2cAddrSonarRange = I2cAddr.create8bit(0x10);

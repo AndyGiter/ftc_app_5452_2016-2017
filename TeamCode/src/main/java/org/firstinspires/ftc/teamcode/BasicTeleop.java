@@ -19,23 +19,19 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  *  Y: Toggle default speed
  *  Right Stick (up and down): Right motors forwards and backwards
  *  Left Stick (up and down): Left Motors forwards and backwards
+ *
+ *  TODO: Add a button to stop the shooting loop
  */
-
-/*
-* Two Controller scheme (if implemented)
-* Move collecting and shooting to gamepad2
-* Change slowmode to bumpers
-* */
 
 @TeleOp(name="New Teleop", group="Teleop")
 public class BasicTeleop extends LinearBase {
 
-    private double speedMod = 1;
     private boolean defaultSpeed = false; // true is to use MAX_SPEED, false is SUB_MAX_SPEED
     private final double MAX_SPEED = 1;
     private final double SUB_MAX_SPEED = 0.75;
     private final double SLOW_MOD = 0.5; // 50% of normal speed
     private final double SUPER_SLOW_MOD = 0.3;
+    private double speedMod = SUB_MAX_SPEED;
 
     private boolean press = false;
     private final int PRESS_TIME = 250;
