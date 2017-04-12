@@ -12,7 +12,7 @@ public class moveTest extends LinearBase {
 
     public void runOpMode() throws InterruptedException
     {
-        initalize(DcMotor.RunMode.RUN_TO_POSITION, true);
+        initialise(DcMotor.RunMode.RUN_TO_POSITION, true);
         waitForStart();
         Thread.sleep(100);
 

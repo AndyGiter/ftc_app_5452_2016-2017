@@ -43,10 +43,8 @@ public abstract class LinearBase extends LinearOpMode{
     private I2cAddr i2cAddrGyro = I2cAddr.create8bit(0x20);
 
     ModernRoboticsI2cRangeSensor frontRange; // The range sensor on the front of the robot
-    ModernRoboticsI2cRangeSensor sonarRange; // The range sensor under the side button presser DOESNT WORK TODO: Remove this and all instances of it
 
     private I2cAddr i2cAddrFrontRange = I2cAddr.create8bit(0x28);
-    private I2cAddr i2cAddrSonarRange = I2cAddr.create8bit(0x10);
 
     private DcMotor.RunMode defualtRunMode = DcMotor.RunMode.RUN_USING_ENCODER;
 
@@ -62,7 +60,7 @@ public abstract class LinearBase extends LinearOpMode{
 
     public boolean running = false; // for if the shoot thread is running
 
-    public void initalize() throws InterruptedException
+    public void initialise() throws InterruptedException
     {
         double start = getRuntime();
 
@@ -105,10 +103,8 @@ public abstract class LinearBase extends LinearOpMode{
         frontColor.setI2cAddress(i2cAddrFrontColor);
 
         frontRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "frontRange");
-        sonarRange = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sonarRange");
 
         frontRange.setI2cAddress(i2cAddrFrontRange);
-        sonarRange.setI2cAddress(i2cAddrSonarRange);
 
         // Setting the deadzone for the gamepads
         gamepad1.setJoystickDeadzone(DEADZONE);
@@ -127,22 +123,22 @@ public abstract class LinearBase extends LinearOpMode{
         frontColor.enableLed(false);
     }
 
-    public void initalize(DcMotor.RunMode newDefualtRunMode) throws InterruptedException
+    public void initialise(DcMotor.RunMode newDefualtRunMode) throws InterruptedException
     {
         defualtRunMode = newDefualtRunMode;
-        initalize();
+        initialise();
     }
 
-    public void initalize(boolean newVerbose) throws InterruptedException
+    public void initialise(boolean newVerbose) throws InterruptedException
     {
         verbose = newVerbose;
-        initalize();
+        initialise();
     }
-    public void initalize(DcMotor.RunMode newDefualtRunMode, boolean newVerbose) throws InterruptedException
+    public void initialise(DcMotor.RunMode newDefualtRunMode, boolean newVerbose) throws InterruptedException
     {
         defualtRunMode = newDefualtRunMode;
         verbose = newVerbose;
-        initalize();
+        initialise();
     }
 
     /*
@@ -154,7 +150,7 @@ public abstract class LinearBase extends LinearOpMode{
     @Deprecated
     public void initAndWait(DcMotor.RunMode newDefault, boolean newVerbose) throws InterruptedException
     {
-        initalize(newDefault, newVerbose);
+        initialise(newDefault, newVerbose);
         waitForStart();
         Thread.sleep(100);
     }
@@ -189,12 +185,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         Thread.sleep(WAIT_BEFORE_MOVE);
 
-        right1.setPower(speed);
-        left1.setPower(speed);
-        right2.setPower(speed);
-        left2.setPower(speed);
-        right3.setPower(speed);
-        left3.setPower(speed);
+        setDriveMotorSpeed(speed);
 
         while(opModeIsActive() &&
                 right1.isBusy() &&
@@ -205,12 +196,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         }
 
-        right1.setPower(0);
-        left1.setPower(0);
-        right2.setPower(0);
-        left2.setPower(0);
-        right3.setPower(0);
-        left3.setPower(0);
+        stopDriveMotors();
 
         if(defualtRunMode != DcMotor.RunMode.RUN_TO_POSITION) // last thing to do
         {
@@ -253,23 +239,12 @@ public abstract class LinearBase extends LinearOpMode{
 
             if(gyro.getIntegratedZValue() > targetHeading) // Right turn
             {
-                right1.setPower(-1 * speed);
-                left1.setPower(speed);
-                right2.setPower(-1 * speed);
-                left2.setPower(speed);
-                right3.setPower(-1 * speed);
-                left3.setPower(speed);
+                setDriveMotorSpeed(speed, -1 * speed);
             }
 
             else //then its a left turn
             {
-
-                left1.setPower(-1 * speed);
-                right1.setPower(speed);
-                left2.setPower(-1 * speed);
-                right2.setPower(speed);
-                left3.setPower(-1 * speed);
-                right3.setPower(speed);
+                setDriveMotorSpeed(-1 * speed, speed);
             }
 
             if(verbose)
@@ -281,12 +256,7 @@ public abstract class LinearBase extends LinearOpMode{
             }
         }
 
-        right1.setPower(0);
-        left1.setPower(0);
-        right2.setPower(0);
-        left2.setPower(0);
-        right3.setPower(0);
-        left3.setPower(0);
+        stopDriveMotors();
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) // last thing to do
         {
@@ -319,12 +289,7 @@ public abstract class LinearBase extends LinearOpMode{
         }
 
         // move into beacon
-        right1.setPower(speed);
-        left1.setPower(speed);
-        right2.setPower(speed);
-        left2.setPower(speed);
-        right3.setPower(speed);
-        left3.setPower(speed);
+        setDriveMotorSpeed(speed);
 
         while(frontRange.getDistance(DistanceUnit.CM) > SLOW_DIST)
         {
@@ -337,12 +302,7 @@ public abstract class LinearBase extends LinearOpMode{
             }
         }
 
-        right1.setPower(SLOW_SPEED);
-        left1.setPower(SLOW_SPEED);
-        right2.setPower(SLOW_SPEED);
-        left2.setPower(SLOW_SPEED);
-        right3.setPower(SLOW_SPEED);
-        left3.setPower(SLOW_SPEED);
+        setDriveMotorSpeed(SLOW_SPEED);
 
         while(frontRange.getDistance(DistanceUnit.CM) > STOP_DIST)
         {
@@ -355,12 +315,7 @@ public abstract class LinearBase extends LinearOpMode{
             }
         }
 
-        right1.setPower(0);
-        left1.setPower(0);
-        right2.setPower(0);
-        left2.setPower(0);
-        right3.setPower(0);
-        left3.setPower(0);
+        stopDriveMotors();
 
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER) // last thing to do
         {
@@ -492,6 +447,27 @@ public abstract class LinearBase extends LinearOpMode{
         Thread.sleep(100);
 
         resetDriveMotorMode();
+    }
+
+    public void setDriveMotorSpeed(double leftSpeed, double rightSpeed)
+    {
+        left1.setPower(leftSpeed);
+        right1.setPower(rightSpeed);
+        left2.setPower(leftSpeed);
+        right2.setPower(rightSpeed);
+        left3.setPower(leftSpeed);
+        right3.setPower(rightSpeed);
+
+    }
+
+    public void setDriveMotorSpeed(double speed)
+    {
+        setDriveMotorSpeed(speed, speed);
+    }
+
+    public void stopDriveMotors()
+    {
+        setDriveMotorSpeed(0);
     }
 
     public void gyroTelemetry(ModernRoboticsI2cGyro sensorGyro)

@@ -19,7 +19,6 @@ public class SensorTester extends LinearBase{
         while(opModeIsActive())
         {
             telemetry.addData("cm", "%.2f cm", frontRange.getDistance(DistanceUnit.CM));
-            telemetry.addData("cm", "%.2f cm", sonarRange.getDistance(DistanceUnit.CM));
             telemetry.update();
         }
     }
