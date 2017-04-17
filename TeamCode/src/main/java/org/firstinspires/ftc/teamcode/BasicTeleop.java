@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  *
  * This is the tele op program for team 5452
  *
- * Gamepad1:
+ * Gamepad1: TODO: Finalize after worlds
  *  Start: Add additional logging
  *  A: Automatic shoot and reload
  *  B: Manual turn of the snail cam
@@ -19,21 +19,19 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  *  Y: Toggle default speed
  *  Right Stick (up and down): Right motors forwards and backwards
  *  Left Stick (up and down): Left Motors forwards and backwards
- *
- *  TODO: Add a button to stop the shooting loop
  */
 
 @TeleOp(name="New Teleop", group="Teleop")
 public class BasicTeleop extends LinearBase {
 
-    private boolean defaultSpeed = false; // true is to use MAX_SPEED, false is SUB_MAX_SPEED
-    private final double MAX_SPEED = 1;
-    private final double SUB_MAX_SPEED = 0.75;
-    private final double SLOW_MOD = 0.5; // 50% of normal speed
-    private final double SUPER_SLOW_MOD = 0.3;
-    private double speedMod = SUB_MAX_SPEED;
+    private boolean defaultSpeed        = false; // true is to use MAX_SPEED, false is SUB_MAX_SPEED
+    private final double MAX_SPEED      = 1;   // max speed
+    private final double SUB_MAX_SPEED  = 0.75;// 75% of max speed
+    private final double SLOW_MOD       = 0.5; // 50% of max speed
+    private final double SUPER_SLOW_MOD = 0.3; // 30% of max speed
+    private double speedMod             = SUB_MAX_SPEED;
 
-    private boolean press = false;
+    private boolean press        = false;
     private final int PRESS_TIME = 250;
 
     private final double TRIGGER_THRESHOLD = 0.35; // Below this value, the trigger does not count as being pressed
@@ -49,6 +47,11 @@ public class BasicTeleop extends LinearBase {
             {
                 verbose = !verbose;
                 press = true;
+            }
+
+            if(gamepad1.x)
+            {
+                stopThread = true;
             }
 
             if(gamepad1.a)
@@ -97,6 +100,7 @@ public class BasicTeleop extends LinearBase {
                 speedMod = defaultSpeed?MAX_SPEED:SUB_MAX_SPEED;
             }
 
+            // Sets the drive motors to each the position on each joystick
             setDriveMotorSpeed(-1 * gamepad1.left_stick_y  * speedMod, -1 * gamepad1.right_stick_y * speedMod);
 
             telemetry.addData("Current Speed Mod", (speedMod*100)+"%");
@@ -105,10 +109,11 @@ public class BasicTeleop extends LinearBase {
                 telemetry.addData("A button pressed?", gamepad1.a?"Yes" : "No");
                 telemetry.addData("Touch Sensor pressed?", touch.getState()?"Yes":"No");
                 telemetry.addData("Shooter Spin Thread Running", running?"Yes":"No");
+                telemetry.addData("stopThread", stopThread);
             }
             telemetry.update();
 
-            if(press) // TODO: make a better system for this that doesn't prevent use of the joysticks. Threading?
+            if(press) // This just prevents a button from being pressed multiple times
             {
                 Thread.sleep(PRESS_TIME);
                 press = false;
