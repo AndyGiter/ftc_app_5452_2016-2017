@@ -14,6 +14,7 @@ Support is available by emailing support@modernroboticsinc.com.
 */
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.GyroSensor;
@@ -24,7 +25,7 @@ import com.qualcomm.robotcore.util.Range;
 import static java.lang.Thread.sleep;
 
 @TeleOp(name="3 Hunting", group="Gyro Video")
-//@Disabled
+@Disabled
 public class MRI_Gyro_Vid3_Hunting extends OpMode
 {
     private ElapsedTime runtime = new ElapsedTime();

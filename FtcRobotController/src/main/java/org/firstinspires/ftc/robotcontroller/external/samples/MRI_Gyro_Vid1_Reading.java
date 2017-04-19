@@ -20,7 +20,7 @@ import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name="1 Gyro Read", group="Gyro Video")
-//@Disabled
+@Disabled
 public class MRI_Gyro_Vid1_Reading extends OpMode
 {
     private ElapsedTime runtime = new ElapsedTime();

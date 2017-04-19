@@ -14,6 +14,7 @@ Support is available by emailing support@modernroboticsinc.com.
 */
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.GyroSensor;
@@ -22,7 +23,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp(name="2 Controlling Servo", group="Gyro Video")
-//@Disabled
+@Disabled
 public class MRI_Gyro_Vid2_ControllingServo extends OpMode
 {
     private ElapsedTime runtime = new ElapsedTime();
