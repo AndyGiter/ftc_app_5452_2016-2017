@@ -21,12 +21,12 @@ import android.graphics.Color;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /**
- * This is the program that all other programs should extend (if they're ment to be run on the robot).
+ * This is the program that all other programs should extend (if they're meant to be run on the robot).
  * This has the initialisation functions, move functions, turn functions, and more. This program extends
  * LinearOpMode but does not have a runOpMode function because this class is not meant to be run, it
  * only has functions for classes that are meant to run on the robot.
  *
- * @author Max "Max the Sax" Lowery
+ * @author Max Lowery
  * @since 11-8-16
  * @version TODO: Add at the end of worlds
  */
@@ -75,10 +75,8 @@ public abstract class LinearBase extends LinearOpMode{
 
     /**
      * The initialise method is used to initialise motors, servos, sensors, and the gamepads so that they all work
-     *
-     * @throws InterruptedException
      */
-    public void initialise() throws InterruptedException
+    public void initialise()
     {
         double start = getRuntime();
 
@@ -131,7 +129,7 @@ public abstract class LinearBase extends LinearOpMode{
         if(verbose){telemetry.addData("Done: ","Everything but gyro. Took %.2f seconds", (getRuntime()-start)); telemetry.update();}
 
         while (!isStopRequested() && gyro.isCalibrating())  { // Make sure that the gyro is calibrated
-            Thread.sleep(50);
+            sleep(50);
         }
 
 
@@ -148,9 +146,8 @@ public abstract class LinearBase extends LinearOpMode{
      * For setting a different default runMode before initialising
      *
      * @param newDefualtRunMode A new default runMode for the drive motors, other motors cannot be changed
-     * @throws InterruptedException
      */
-    public void initialise(DcMotor.RunMode newDefualtRunMode) throws InterruptedException
+    public void initialise(DcMotor.RunMode newDefualtRunMode)
     {
         defualtRunMode = newDefualtRunMode;
         initialise();
@@ -160,9 +157,8 @@ public abstract class LinearBase extends LinearOpMode{
      * For setting a different level of verbosity
      *
      * @param newVerbose True is more logging through telemetry, false is the most basic amount
-     * @throws InterruptedException
      */
-    public void initialise(boolean newVerbose) throws InterruptedException
+    public void initialise(boolean newVerbose)
     {
         verbose = newVerbose;
         initialise();
@@ -173,9 +169,9 @@ public abstract class LinearBase extends LinearOpMode{
      *
      * @param newDefualtRunMode A new default runMode for the drive motors, other motors cannot be changed
      * @param newVerbose        True is more logging through telemetry, false is the most basic amount
-     * @throws InterruptedException
+     *
      */
-    public void initialise(DcMotor.RunMode newDefualtRunMode, boolean newVerbose) throws InterruptedException
+    public void initialise(DcMotor.RunMode newDefualtRunMode, boolean newVerbose)
     {
         defualtRunMode = newDefualtRunMode;
         verbose = newVerbose;
@@ -189,17 +185,17 @@ public abstract class LinearBase extends LinearOpMode{
      *
      * @param newDefault A new default runMode for the drive motors, other motors cannot be changed
      * @param newVerbose True is more logging through telemetry, false is the most basic amount
-     * @throws InterruptedException
+     *
      * @deprecated The only reason I had this function was to make sure that the servos were properly initialised because
      * they could only be initialised after the match started or else the robot would be outside the 18 in cube. Now that
      * we have removed all the servos, there is no reason to initialise the robot like this.
      */
     @Deprecated
-    public void initAndWait(DcMotor.RunMode newDefault, boolean newVerbose) throws InterruptedException
+    public void initAndWait(DcMotor.RunMode newDefault, boolean newVerbose)
     {
         initialise(newDefault, newVerbose);
         waitForStart();
-        Thread.sleep(100);
+        sleep(100);
     }
 
     /**
@@ -207,9 +203,8 @@ public abstract class LinearBase extends LinearOpMode{
      *
      * @param speed    The speed the robot should go
      * @param distance The distance, or amount of motor encoder ticks, the robot should go.
-     * @throws InterruptedException
      */
-    public void move(double speed, double distance) throws InterruptedException
+    public void move(double speed, double distance)
     {
         final int WAIT_BEFORE_MOVE = 100;
 
@@ -240,7 +235,7 @@ public abstract class LinearBase extends LinearOpMode{
         left1.setTargetPosition((int) (left1.getCurrentPosition() + distance));
         left3.setTargetPosition((int) (left3.getCurrentPosition() + distance));
 
-        Thread.sleep(WAIT_BEFORE_MOVE); // Just to make sure that everything is set before the robot starts moving
+        sleep(WAIT_BEFORE_MOVE); // Just to make sure that everything is set before the robot starts moving
 
         setDriveMotorSpeed(speed);
 
@@ -250,8 +245,7 @@ public abstract class LinearBase extends LinearOpMode{
                 right3.isBusy() &&
                 left1.isBusy()  &&
                 left3.isBusy()){
-            Thread.sleep(50);
-
+            sleep(50);
         }
 
         stopDriveMotors();
@@ -261,16 +255,15 @@ public abstract class LinearBase extends LinearOpMode{
             resetDriveMotorMode();
         }
 
-        Thread.sleep(END_WAIT);
+        sleep(END_WAIT);
     }
 
     /**
      * Moves the robot forward at the max move speed.
      *
      * @param distance The distance, or amount of motor encoder ticks, the robot should go.
-     * @throws InterruptedException
      */
-    public void move(double distance) throws InterruptedException
+    public void move(double distance)
     {
         move(MAX_MOVE_SPEED, distance);
     }
@@ -280,9 +273,8 @@ public abstract class LinearBase extends LinearOpMode{
      *
      * @param maxSpeed The max speed the robot will move at. The robot slows as it gets closer to the target deg for accuracy.
      * @param deg      The amount of degrees the robot should turn. Negative values turn right and positive turns left.
-     * @throws InterruptedException
      */
-    public void turn(double maxSpeed, double deg) throws InterruptedException
+    public void turn(double maxSpeed, double deg)
     {
         // The TURN_RANGE variable adjusts the range that the robot can stop in. While it would be nice to
         // have the robot stop on a dime it cant always and this makes the range one above and one below the
@@ -304,11 +296,13 @@ public abstract class LinearBase extends LinearOpMode{
         {
             setDriveMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            Thread.sleep(WAIT_BEFORE_MOVE);
+            sleep(WAIT_BEFORE_MOVE);
         }
 
         // While the gyro is not within the range (TURN_RANGE)
-        while(!(gyro.getIntegratedZValue() <= targetHeading+(TURN_RANGE/2.0) && gyro.getIntegratedZValue() >= targetHeading-(TURN_RANGE/2.0)) && opModeIsActive())
+        while(!(gyro.getIntegratedZValue() <= targetHeading +(TURN_RANGE/2.0)  &&
+                gyro.getIntegratedZValue() >= targetHeading -(TURN_RANGE/2.0)) &&
+                opModeIsActive())
         {
             speed = Range.clip(maxSpeed * Math.abs((gyro.getIntegratedZValue() - targetHeading) / deg), MIN_SPEED, maxSpeed);
 
@@ -341,16 +335,15 @@ public abstract class LinearBase extends LinearOpMode{
         if (verbose) {
             telemetry.addData("Done: ", "Turning. " + deg + " deg. Heading: " + gyro.getIntegratedZValue() + " Target Heading: " + targetHeading); telemetry.update();}
 
-        Thread.sleep(END_WAIT);
+        sleep(END_WAIT);
     }
 
     /**
      * Turns the robot at the max turn speed
      *
      * @param deg The amount of degrees the robot should turn. Negative values turn right and positive turns left.
-     * @throws InterruptedException
      */
-    public void turn(double deg) throws InterruptedException
+    public void turn(double deg)
     {
         turn(MAX_TURN_SPEED, deg);
     }
@@ -359,10 +352,9 @@ public abstract class LinearBase extends LinearOpMode{
      * Presses the beacon and if the beacon is the wrong color presses it again.
      *
      * @param speed       The speed the robot will move at. Recommended is 0.3
-     * @param colorWanted This is whatever the color is wanted on the beacon after the function is over. Either Color.BLUE or Color.RED.
-     * @throws InterruptedException
+     * @param colorWanted This is whatever the color is wanted on the beacon after the function is over. Either 'Color.BLUE' or 'Color.RED'.
      */
-    public void pressAndTest(double speed, int colorWanted) throws InterruptedException // recommended speed: 0.3
+    public void pressAndTest(double speed, int colorWanted) // recommended speed: 0.3
     {
         final double WAIT_BEFORE_MOVE = 5; // in sec // TODO: Test to see what the smallest value for this is
         final double MOVE_BACK_DIST = 1440*0.5 * -1;
@@ -377,7 +369,7 @@ public abstract class LinearBase extends LinearOpMode{
         if(defualtRunMode != DcMotor.RunMode.RUN_USING_ENCODER)
         {
             setDriveMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            Thread.sleep(100);
+            sleep(100);
         }
 
         // move into beacon
@@ -486,15 +478,14 @@ public abstract class LinearBase extends LinearOpMode{
     /**
      * Just shoots the shooter, does not recock and is blocking.
      *
-     * @throws InterruptedException
      * @depricated because it does not recock and blocks other code. Use shootThreaded().
      */
     @Deprecated
-    public void shoot() throws InterruptedException
+    public void shoot()
     {
         shooter.setPower(0.9);
 
-        Thread.sleep(500);
+        sleep(500);
 
         shooter.setPower(0);
     }
@@ -505,9 +496,9 @@ public abstract class LinearBase extends LinearOpMode{
      * @param speed           The speed the robot will move at
      * @param totalDist       The total distance, or motor encoder ticks, that the robot will move
      * @param distBeforeShoot The distance, or motor encoder ticks, that the robot will move before shooting
-     * @throws InterruptedException
+     *
      */
-    public void moveShootMove(double speed, double totalDist, double distBeforeShoot) throws InterruptedException
+    public void moveShootMove(double speed, double totalDist, double distBeforeShoot)
     {
         final int WAIT_TIME = 250;
 
@@ -522,7 +513,7 @@ public abstract class LinearBase extends LinearOpMode{
 
         shootThreaded();
 
-        Thread.sleep(WAIT_TIME); // time for it to shoot
+        sleep(WAIT_TIME); // time for it to shoot
 
         if(distBeforeShoot < totalDist)
             move(speed, totalDist - distBeforeShoot);
@@ -554,10 +545,8 @@ public abstract class LinearBase extends LinearOpMode{
 
     /**
      * Resets the encoders on all drive motors, then the mode is set back to the default runMode
-     *
-     * @throws InterruptedException
      */
-    public void resetEncoders() throws InterruptedException
+    public void resetEncoders()
     {
         right1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -566,26 +555,25 @@ public abstract class LinearBase extends LinearOpMode{
         left2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         left3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        Thread.sleep(100);
+        sleep(100);
 
         resetDriveMotorMode();
     }
 
     /**
-     * Sets the speed of the motors on the drivetrain. The sides of the drivetrain are alternated so one side doesnt start before the other.
+     * Sets the speed of the motors on the drivetrain. The sides of the drivetrain are alternated so one side doesn't start before the other.
      *
      * @param leftSpeed The speed for the left side
      * @param rightSpeed The speed for the right side
      */
     public void setDriveMotorSpeed(double leftSpeed, double rightSpeed)
     {
-        left1.setPower(leftSpeed);
+        left1 .setPower(leftSpeed);
         right1.setPower(rightSpeed);
-        left2.setPower(leftSpeed);
+        left2 .setPower(leftSpeed);
         right2.setPower(rightSpeed);
-        left3.setPower(leftSpeed);
+        left3 .setPower(leftSpeed);
         right3.setPower(rightSpeed);
-
     }
 
     /**

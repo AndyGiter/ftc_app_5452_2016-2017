@@ -58,7 +58,7 @@ public class BasicTeleop extends LinearBase {
             {
                 shootThreaded();
             }
-            else if(gamepad1.b && !running)
+            else if(gamepad1.b && !running) // Only do manual spinning when it is not currently being spun
             {
                 shooter.setPower(0.9);
             }
