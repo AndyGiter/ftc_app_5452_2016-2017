@@ -34,7 +34,7 @@ public class BasicTeleop extends LinearBase {
     private boolean press        = false;
     private final int PRESS_TIME = 250;
 
-    private final double TRIGGER_THRESHOLD = 0.35; // Below this value, the trigger does not count as being pressed
+    private final double TRIGGER_THRESHOLD = 0.35; // Below this value, the trigger does not count as being pressed. This code uses the triggers like buttons
 
     public void runOpMode() throws InterruptedException
     {
