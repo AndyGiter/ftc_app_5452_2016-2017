@@ -21,7 +21,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  *  Left Stick (up and down): Left Motors forwards and backwards
  */
 
-@TeleOp(name="New Teleop", group="Teleop")
+@TeleOp(name="Teleop", group="Teleop")
 public class BasicTeleop extends LinearBase {
 
     private boolean defaultSpeed        = false; // true is to use MAX_SPEED, false is SUB_MAX_SPEED
@@ -103,7 +103,7 @@ public class BasicTeleop extends LinearBase {
             // Sets the drive motors to each the position on each joystick
             setDriveMotorSpeed(-1 * gamepad1.left_stick_y  * speedMod, -1 * gamepad1.right_stick_y * speedMod);
 
-            telemetry.addData("Current Speed Mod", (speedMod*100)+"%");
+            telemetry.addData("Current Speed Mod", (speedMod*100)+"%"); // Make it so it doesn't display 75.0% and displays 75%
             if(verbose)
             {
                 telemetry.addData("A button pressed?", gamepad1.a?"Yes" : "No");

@@ -23,6 +23,7 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 
 @TeleOp(name = "Range", group = "MRI")
+@Disabled
 public class MRI_Range extends OpMode {
 
     byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
