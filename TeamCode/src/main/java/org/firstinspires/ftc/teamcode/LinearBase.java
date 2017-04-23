@@ -261,7 +261,7 @@ public abstract class LinearBase extends LinearOpMode{
     /**
      * Moves the robot forward at the max move speed.
      *
-     * @param distance The distance, or amount of motor encoder ticks, the robot should go.
+     * @param distance The distance, or amount of motor encoder ticks, the robot should go. Negative distance moves backwards
      */
     public void move(double distance)
     {
@@ -524,6 +524,8 @@ public abstract class LinearBase extends LinearOpMode{
      * to prevent fuses from being blown.
      *
      * @param mode The mode that the drivetrain will be set to.
+     *
+     * TODO: Add a way to make every motor the desired mode and a safe mode that has the two middle in run without encoder
      */
     public void setDriveMotorMode(DcMotor.RunMode mode)
     {
