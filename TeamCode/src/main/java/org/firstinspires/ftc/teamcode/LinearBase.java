@@ -52,7 +52,7 @@ public abstract class LinearBase extends LinearOpMode{
 
     private I2cAddr i2cAddrGyro = I2cAddr.create8bit(0x20);
 
-    ModernRoboticsI2cRangeSensor frontRange; // The range sensor on the front of the robot
+    ModernRoboticsI2cRangeSensor frontRange; // The range sensor on the front of the robot, used to sense the wall in the
 
     private I2cAddr i2cAddrFrontRange = I2cAddr.create8bit(0x28);
 
@@ -66,15 +66,15 @@ public abstract class LinearBase extends LinearOpMode{
 
     // These are just max speeds for autonomous, Teleop can go faster because it doesn't have to be as accurate and if there is a case where a fuse could blow adjustments can be made on the spot
     final double MAX_MOVE_SPEED = 0.5;
-    final double MAX_TURN_SPEED = 0.5;
+    final double MAX_TURN_SPEED = 0.4;
 
     final int END_WAIT = 200;
 
-    public boolean running = false; // for if the shoot thread is running
+    public boolean running    = false; // for if the shoot thread is running
     public boolean stopThread = false; // for use when the button is broken. Turn to true
 
     /**
-     * The initialise method is used to initialise motors, servos, sensors, and the gamepads so that they all work
+     * The initialise method is used to initialise motors, servos, sensors, and the gamepads for use by programs and functions.
      */
     public void initialise()
     {
@@ -99,17 +99,17 @@ public abstract class LinearBase extends LinearOpMode{
         right2 = hardwareMap.dcMotor.get("right2");
         right3 = hardwareMap.dcMotor.get("right3");
 
-        shooter = hardwareMap.dcMotor.get("snail");
+        shooter  = hardwareMap.dcMotor.get("snail");
         collector = hardwareMap.dcMotor.get("feed");
 
         right1.setDirection(DcMotor.Direction.REVERSE);
         right3.setDirection(DcMotor.Direction.REVERSE);
-        left2.setDirection(DcMotor.Direction.REVERSE);
+        left2 .setDirection(DcMotor.Direction.REVERSE);
 
         resetEncoders(); // Resets the encoders and sets the mode to the default runmode
 
         collector.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooter .setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         shooter.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -280,7 +280,7 @@ public abstract class LinearBase extends LinearOpMode{
         // have the robot stop on a dime it cant always and this makes the range one above and one below the
         // input variable when set to two, for example.
         final int TURN_RANGE = 2;
-        final double MIN_SPEED = 0.05; // Exactly what it sounds like. At NSR it was 0.03
+        final double MIN_SPEED = 0.07; // Exactly what it sounds like. At NSR it was 0.03. If it blows while turning, raise this variable
         final int WAIT_BEFORE_MOVE = 100;
         double targetHeading = gyro.getIntegratedZValue() + deg; // Resetting the gyro takes around 3 seconds and that's too long
         double speed = maxSpeed;
@@ -360,8 +360,8 @@ public abstract class LinearBase extends LinearOpMode{
         final double MOVE_BACK_DIST = 1440*0.5 * -1;
         final double SECOND_PRESS_DIST = 1440 * 0.7 * -1;
         final int WAIT_BEFORE_READ = 500; // In ms
-        final int SLOW_DIST = 9; // The distance from the wall to the robot where the robot will stop in cm
-        final int STOP_DIST = 6;
+        final int SLOW_DIST = 9; // The distance from the wall to the robot where the robot will slow in cm
+        final int STOP_DIST = 7; // The distance from the wall to the robot where it will stop in cm. Used to be 6
         final double SLOW_SPEED = speed/2.0;
 
         frontColor.enableLed(false);
@@ -386,7 +386,7 @@ public abstract class LinearBase extends LinearOpMode{
             }
         }
 
-        setDriveMotorSpeed(SLOW_SPEED);
+        setDriveMotorSpeed(SLOW_SPEED); // Slow down for a more sensual press
 
         while(frontRange.getDistance(DistanceUnit.CM) > STOP_DIST)
         {
@@ -416,7 +416,7 @@ public abstract class LinearBase extends LinearOpMode{
             telemetry.update();
         }
 
-        else if(frontColor.red() == 255 && frontColor.blue() == 255)
+        else if(frontColor.red() == 255 && frontColor.blue() == 255) // 255 is the 'color' that is displayed when the sensor is not setup correctly. Only test these two because we never use green.
         {
             telemetry.addData("Error", "Color sensor is broken again");
             telemetry.update();
@@ -449,8 +449,9 @@ public abstract class LinearBase extends LinearOpMode{
 
     /**
      * This function shoots and recocks the shooter. This function is nonblocking so for
-     * accurate shooting wait around 300 ms after calling this function. If the touch
-     * sensor is broken, this function will spin the cam until stopThread is true or the program is over.
+     * accurate shooting wait around 300 ms after calling this function to make sure the
+     * ball has actually shot. If the touch sensor is broken, this function will spin the
+     * cam until stopThread is true or the program is over.
      */
     public void shootThreaded() // TODO: Add a part to test if the button is broken by seeing if the method has been running for too long
     {
@@ -478,7 +479,7 @@ public abstract class LinearBase extends LinearOpMode{
     /**
      * Just shoots the shooter, does not recock and is blocking.
      *
-     * @depricated because it does not recock and blocks other code. Use shootThreaded().
+     * @depricated because it does not recock and blocks other code. Use shootThreaded() unless the is broken.
      */
     @Deprecated
     public void shoot()
@@ -521,11 +522,10 @@ public abstract class LinearBase extends LinearOpMode{
 
     /**
      * Function to set drivetrain motors to a different mode. right2 and left2 are set to RUN_WITHOUT_ENCODER
-     * to prevent fuses from being blown.
+     * to prevent fuses from being blown. Running a third of motors on the drivetrain without PID hasn't hurt
+     * moving accuracy as far as we can tell.
      *
      * @param mode The mode that the drivetrain will be set to.
-     *
-     * TODO: Add a way to make every motor the desired mode and a safe mode that has the two middle in run without encoder
      */
     public void setDriveMotorMode(DcMotor.RunMode mode)
     {
@@ -563,7 +563,8 @@ public abstract class LinearBase extends LinearOpMode{
     }
 
     /**
-     * Sets the speed of the motors on the drivetrain. The sides of the drivetrain are alternated so one side doesn't start before the other.
+     * Sets the speed of the motors on the drivetrain. The sides of the drivetrain
+     * are alternated so one side doesn't start before the other.
      *
      * @param leftSpeed The speed for the left side
      * @param rightSpeed The speed for the right side
