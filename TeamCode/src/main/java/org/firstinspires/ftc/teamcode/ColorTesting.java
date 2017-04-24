@@ -20,9 +20,11 @@ public class ColorTesting extends LinearBase {
 
     private boolean ledState = true;
 
-    public void runOpMode() throws InterruptedException
+    public void runOpMode()
     {
-        initAndWait(DcMotor.RunMode.RUN_TO_POSITION, true);
+        initialise(DcMotor.RunMode.RUN_TO_POSITION, true);
+        waitForStart();
+        sleep(100);
         frontColor.enableLed(ledState);
 
         while(opModeIsActive())
@@ -32,12 +34,12 @@ public class ColorTesting extends LinearBase {
             {
                 ledState = !ledState;
                 frontColor.enableLed(ledState);
-                Thread.sleep(300);
+                sleep(300);
             }
 
             colorTelemetry(frontColor);
             telemetry.update();
-            Thread.sleep(50);
+            sleep(50);
         }
     }
 }

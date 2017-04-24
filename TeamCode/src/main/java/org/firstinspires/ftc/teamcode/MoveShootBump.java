@@ -10,11 +10,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 @Autonomous(name = "Move Shoot Bump ALL SIDES", group ="auto")
 public class MoveShootBump extends LinearBase {
 
-    public void runOpMode() throws InterruptedException
+    public void runOpMode()
     {
-        initAndWait(DcMotor.RunMode.RUN_TO_POSITION, true);
+        initialise(DcMotor.RunMode.RUN_TO_POSITION, true);
+        waitForStart();
+        sleep(100);
 
-        Thread.sleep(17500);
+        sleep(17500); // Give allies time to move
 
         moveShootMove(-0.3, 1440 * 2.85, 1440 * 1.8);
     }

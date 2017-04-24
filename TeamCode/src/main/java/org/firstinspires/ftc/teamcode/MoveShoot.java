@@ -10,14 +10,16 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 @Autonomous(name = "Move Shoot ALL SIDES", group ="auto")
 public class MoveShoot extends LinearBase {
 
-    public void runOpMode() throws InterruptedException
+    public void runOpMode()
     {
-        initAndWait(DcMotor.RunMode.RUN_TO_POSITION, true);
+        initialise(DcMotor.RunMode.RUN_TO_POSITION, true);
+        waitForStart();
+        sleep(100);
 
-        Thread.sleep(10000);
+        sleep(10000);
 
         moveShootMove(-0.3, 1440 * 1.8, 1440 * 1.8);
 
-        turn(MAX_TURN_SPEED, 180);
+        turn(180);
     }
 }
