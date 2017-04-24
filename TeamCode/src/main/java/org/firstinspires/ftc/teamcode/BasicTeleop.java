@@ -8,10 +8,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  *
  * This is the tele op program for team 5452
  *
- * Gamepad1: TODO: Finalize after worlds
+ * Gamepad1:
  *  Start: Add additional logging
  *  A: Automatic shoot and reload
  *  B: Manual turn of the snail cam
+ *  X: Stops shooter thread
  *  Right Bumper: Collect balls
  *  Left Bumper: Push out balls
  *  Right Trigger: Super slow mode (30% Speed)
@@ -36,10 +37,12 @@ public class BasicTeleop extends LinearBase {
 
     private final double TRIGGER_THRESHOLD = 0.35; // Below this value, the trigger does not count as being pressed. This code uses the triggers like buttons
 
-    public void runOpMode() throws InterruptedException
+    public void runOpMode()
     {
 
-        initAndWait(DcMotor.RunMode.RUN_USING_ENCODER, false);
+        initialise(DcMotor.RunMode.RUN_USING_ENCODER, false);
+        waitForStart();
+        sleep(100);
 
         while(opModeIsActive())
         {
@@ -103,7 +106,7 @@ public class BasicTeleop extends LinearBase {
             // Sets the drive motors to each the position on each joystick
             setDriveMotorSpeed(-1 * gamepad1.left_stick_y  * speedMod, -1 * gamepad1.right_stick_y * speedMod);
 
-            telemetry.addData("Current Speed Mod", (speedMod*100)+"%"); // Make it so it doesn't display 75.0% and displays 75%
+            telemetry.addData("Current Speed Mod", (int)(speedMod*100)+"%");
             if(verbose)
             {
                 telemetry.addData("A button pressed?", gamepad1.a?"Yes" : "No");
@@ -115,7 +118,7 @@ public class BasicTeleop extends LinearBase {
 
             if(press) // This just prevents a button from being pressed multiple times
             {
-                Thread.sleep(PRESS_TIME);
+                sleep(PRESS_TIME);
                 press = false;
             }
         }
