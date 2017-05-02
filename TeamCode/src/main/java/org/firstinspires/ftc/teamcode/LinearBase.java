@@ -179,23 +179,81 @@ public abstract class LinearBase extends LinearOpMode{
     }
 
     /**
-     * To initialise and wait for start. When this was programmed we needed the servos to be initialised, but they could
-     * not be initialised inside the 18' space (because of the limitations of the modern robotics servo controller).
-     * We had this function to make sure that they did get initialised correctly but only after the game started.
+     * Function to set drivetrain motors to a different mode. right2 and left2 are set to RUN_WITHOUT_ENCODER
+     * to prevent fuses from being blown. Running a third of motors on the drivetrain without PID hasn't hurt
+     * moving accuracy as far as we can tell.
      *
-     * @param newDefault A new default runMode for the drive motors, other motors cannot be changed
-     * @param newVerbose True is more logging through telemetry, false is the most basic amount
-     *
-     * @deprecated The only reason I had this function was to make sure that the servos were properly initialised because
-     * they could only be initialised after the match started or else the robot would be outside the 18 in cube. Now that
-     * we have removed all the servos, there is no reason to initialise the robot like this.
+     * @param mode The mode that the drivetrain will be set to.
      */
-    @Deprecated
-    public void initAndWait(DcMotor.RunMode newDefault, boolean newVerbose)
+    public void setDriveMotorMode(DcMotor.RunMode mode)
     {
-        initialise(newDefault, newVerbose);
-        waitForStart();
+        right1.setMode(mode);
+        right2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Set to this so we don't blow fuses
+        right3.setMode(mode);
+        left1.setMode(mode);
+        left2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Set to this so we don't blow fuses
+        left3.setMode(mode);
+    }
+
+    /**
+     * Resets the drivetrain motors to the default runMode
+     */
+    public void resetDriveMotorMode()
+    {
+        setDriveMotorMode(defualtRunMode);
+    }
+
+    /**
+     * Resets the encoders on all drive motors, then the mode is set back to the default runMode
+     */
+    public void resetEncoders()
+    {
+        right1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         sleep(100);
+
+        resetDriveMotorMode();
+    }
+
+    /**
+     * Sets the speed of the motors on the drivetrain. The sides of the drivetrain
+     * are alternated so one side doesn't start before the other.
+     *
+     * @param leftSpeed The speed for the left side
+     * @param rightSpeed The speed for the right side
+     */
+    public void setDriveMotorSpeed(double leftSpeed, double rightSpeed)
+    {
+        left1 .setPower(leftSpeed);
+        right1.setPower(rightSpeed);
+        left2 .setPower(leftSpeed);
+        right2.setPower(rightSpeed);
+        left3 .setPower(leftSpeed);
+        right3.setPower(rightSpeed);
+    }
+
+    /**
+     * Sets the speed of the motors on the drivetrain
+     *
+     * @param speed The speed of the whole drivetrain (right and left sides)
+     */
+    public void setDriveMotorSpeed(double speed)
+    {
+        setDriveMotorSpeed(speed, speed);
+    }
+
+    /**
+     * Sets the drive motors to 0 speed, stopping them. To make sure that the robot has come to a full
+     * stop wait around 200 ms after calling this function.
+     */
+    public void stopDriveMotors()
+    {
+        setDriveMotorSpeed(0);
     }
 
     /**
@@ -518,84 +576,6 @@ public abstract class LinearBase extends LinearOpMode{
 
         if(distBeforeShoot < totalDist)
             move(speed, totalDist - distBeforeShoot);
-    }
-
-    /**
-     * Function to set drivetrain motors to a different mode. right2 and left2 are set to RUN_WITHOUT_ENCODER
-     * to prevent fuses from being blown. Running a third of motors on the drivetrain without PID hasn't hurt
-     * moving accuracy as far as we can tell.
-     *
-     * @param mode The mode that the drivetrain will be set to.
-     */
-    public void setDriveMotorMode(DcMotor.RunMode mode)
-    {
-        right1.setMode(mode);
-        right2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Set to this so we don't blow fuses
-        right3.setMode(mode);
-        left1.setMode(mode);
-        left2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Set to this so we don't blow fuses
-        left3.setMode(mode);
-    }
-
-    /**
-     * Resets the drivetrain motors to the default runMode
-     */
-    public void resetDriveMotorMode()
-    {
-        setDriveMotorMode(defualtRunMode);
-    }
-
-    /**
-     * Resets the encoders on all drive motors, then the mode is set back to the default runMode
-     */
-    public void resetEncoders()
-    {
-        right1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        right2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        right3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        left1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        left2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        left3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        sleep(100);
-
-        resetDriveMotorMode();
-    }
-
-    /**
-     * Sets the speed of the motors on the drivetrain. The sides of the drivetrain
-     * are alternated so one side doesn't start before the other.
-     *
-     * @param leftSpeed The speed for the left side
-     * @param rightSpeed The speed for the right side
-     */
-    public void setDriveMotorSpeed(double leftSpeed, double rightSpeed)
-    {
-        left1 .setPower(leftSpeed);
-        right1.setPower(rightSpeed);
-        left2 .setPower(leftSpeed);
-        right2.setPower(rightSpeed);
-        left3 .setPower(leftSpeed);
-        right3.setPower(rightSpeed);
-    }
-
-    /**
-     * Sets the speed of the motors on the drivetrain
-     *
-     * @param speed The speed of the whole drivetrain (right and left sides)
-     */
-    public void setDriveMotorSpeed(double speed)
-    {
-        setDriveMotorSpeed(speed, speed);
-    }
-
-    /**
-     * Sets the drive motors to 0 speed, stopping them. To make sure that the robot has come to a full
-     * stop wait around 200 ms after calling this function.
-     */
-    public void stopDriveMotors()
-    {
-        setDriveMotorSpeed(0);
     }
 
     /**
