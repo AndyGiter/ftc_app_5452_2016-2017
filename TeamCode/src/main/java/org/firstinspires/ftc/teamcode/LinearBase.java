@@ -360,8 +360,8 @@ public abstract class LinearBase extends LinearOpMode{
         final double MOVE_BACK_DIST = 1440*0.5 * -1;
         final double SECOND_PRESS_DIST = 1440 * 0.7 * -1;
         final int WAIT_BEFORE_READ = 500; // In ms
-        final int SLOW_DIST = 9; // The distance from the wall to the robot where the robot will slow in cm
-        final int STOP_DIST = 7; // The distance from the wall to the robot where it will stop in cm. Used to be 6
+        final int SLOW_DIST = 10; // The distance from the wall to the robot where the robot will slow in cm
+        final int STOP_DIST = 8; // The distance from the wall to the robot where it will stop in cm. Used to be 6
         final double SLOW_SPEED = speed/2.0;
 
         frontColor.enableLed(false);
