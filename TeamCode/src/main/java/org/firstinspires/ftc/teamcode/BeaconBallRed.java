@@ -21,11 +21,11 @@ public class BeaconBallRed extends LinearBase {
 
         turn(0.3, 45); // turn left 45
 
-        move(-0.7, 1440 * 1.3); // the diag
+        move(-0.7, 1440 * 1.5); // the diag
 
-        turn(0.45, -133); // turn to face the button
+        turn(0.45, -135); // turn to face the button
 
-        pressAndTest(0.4, Color.RED);
+        pressAndTest(0.6, Color.RED);
     }
 }
 

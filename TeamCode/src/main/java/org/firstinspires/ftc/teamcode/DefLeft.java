@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 @Autonomous(name = "Defencive (Left Turn)", group ="auto")
 public class DefLeft extends LinearBase {
 
-    private final double WAIT_BEFORE_CROSS = 10;
+    private final double WAIT_BEFORE_CROSS = 10.5;
 
     public void runOpMode()
     {

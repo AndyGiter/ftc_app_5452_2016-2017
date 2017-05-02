@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 /**
  * Created by mlowery2 on 1/12/2017.
  */
-@Autonomous(name = "Move Shoot Bump ONE BALL ALL SIDES", group ="auto")
+@Autonomous(name = "Move Shoot Bump ONE BALL MID DELAY 10s", group ="support")
 public class MoveShootBumpOneBall extends LinearBase {
 
     public void runOpMode()
@@ -15,8 +15,14 @@ public class MoveShootBumpOneBall extends LinearBase {
         waitForStart();
         sleep(100);
 
-        sleep(17500); // to give allies time to move
+        //moveShootMove(-0.3, 1440 * 2.85, 1440 * 1.3);
 
-        moveShootMove(-0.3, 1440 * 2.85, 1440 * 1.3);
+        move(-0.3, 1440*1.3);
+
+        shootThreaded();
+
+        sleep(10000);
+
+        move(-0.3, 1440*(2.85-1.3));
     }
 }
